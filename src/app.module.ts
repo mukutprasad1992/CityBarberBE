@@ -9,6 +9,8 @@ import { StateModule } from './state/state.module';
 import { CountryModule } from './country/country.module';
 import { ConsumerModule } from './consumer/consumer.module';
 
+
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +24,7 @@ import { ConsumerModule } from './consumer/consumer.module';
     CountryModule,
     ConsumerModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController ],
   providers: [AppService],
 })
 export class AppModule {}

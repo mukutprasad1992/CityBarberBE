@@ -1,6 +1,6 @@
 // cat.model.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, Model } from 'mongoose';
+import { Document } from 'mongoose';
 
 export type UserType = 'consumer' | 'provider';
 
@@ -19,5 +19,3 @@ export class User extends Document {
   userType: UserType;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
-
-export const userModel: Model<User> = mongoose.model('User', UserSchema);
