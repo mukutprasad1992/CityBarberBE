@@ -14,8 +14,8 @@ export class AuthService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {
     this.transporter = nodemailer.createTransport({ service: 'gmail',
     auth: {
-      user: 'vaibhavkurmi76@gmail.com',
-      pass: 'pzehfaaektlbbguo',
+      user: process.env.mailSender,
+      pass: process.env.ForgetPasswordKey,
     },
   });
   }
@@ -62,7 +62,7 @@ export class AuthService {
 
 
   async sendPasswordResetEmail(user: User): Promise<void> {
-    const resetToken = jwt.sign({ userId: user._id }, 'pzehfaaektlbbguo', { expiresIn: '1h' });
+    const resetToken = jwt.sign({ userId: user._id }, process.env.ForgetPasswordKey, { expiresIn: '1h' });
 
     const resetLink = `http://your-app/reset-password?token=${resetToken}`;
 

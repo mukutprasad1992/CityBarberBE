@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { User } from '../../schemas/user.schema';
-import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 
 
