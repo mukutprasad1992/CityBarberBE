@@ -1,16 +1,8 @@
 // consumer/consumer.dto.ts
 
-import { IsEmail, IsNotEmpty, IsString, IsPhoneNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsPhoneNumber } from 'class-validator';
 
 export class CreateConsumerDto {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
-
   @IsNotEmpty()
   @IsPhoneNumber(undefined, { message: 'Invalid phone number' })
   phoneNo: string;

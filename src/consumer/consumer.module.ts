@@ -6,6 +6,8 @@ import { ConsumerController } from './consumer.controller';
 import { City, CitySchema } from 'src/schemas/city.schema';
 import { State, StateSchema } from 'src/schemas/state.schema';
 import { Country, CountrySchema } from 'src/schemas/country.schema';
+// import { UserModule } from 'src/users/user.module';
+import { User, UserSchema } from 'src/schemas/user.schema';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { Country, CountrySchema } from 'src/schemas/country.schema';
       { name: City.name, schema: CitySchema },
       { name: State.name, schema: StateSchema },
       { name: Country.name, schema: CountrySchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   providers: [ConsumerService],
