@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common';
+// app.module.ts
+
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -8,8 +10,7 @@ import { CityModule } from './city/city.module';
 import { StateModule } from './state/state.module';
 import { CountryModule } from './country/country.module';
 import { ConsumerModule } from './consumer/consumer.module';
-
-
+import { AuthorizationMiddleware } from './auth/controller/authorization.middleware';
 
 @Module({
   imports: [
@@ -24,7 +25,14 @@ import { ConsumerModule } from './consumer/consumer.module';
     CountryModule,
     ConsumerModule,
   ],
-  controllers: [AppController ],
+  controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply the AuthorizationMiddleware globally to all routes
+    consumer.apply(AuthorizationMiddleware).forRoutes('*');
+    // Apply the AuthorizationMiddleware specifically to the reset-password route
+    consumer.apply(AuthorizationMiddleware).forRoutes('/auth/reset-password');
+  }
+}
