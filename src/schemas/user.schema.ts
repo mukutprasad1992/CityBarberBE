@@ -1,6 +1,6 @@
 // cat.model.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose,{ Document,Model, Schema as MongooseSchema } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 
 export type UserType = 'consumer' | 'provider';
 
