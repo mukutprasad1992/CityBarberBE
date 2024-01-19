@@ -11,6 +11,7 @@ import { StateModule } from './state/state.module';
 import { CountryModule } from './country/country.module';
 import { ConsumerModule } from './consumer/consumer.module';
 import { AuthorizationMiddleware } from './auth/controller/authorization.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuthorizationMiddleware } from './auth/controller/authorization.middlew
     StateModule,
     CountryModule,
     ConsumerModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

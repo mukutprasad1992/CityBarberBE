@@ -86,7 +86,11 @@ export class AuthService {
   }
 
   generateToken(user: User): string {
-    const payload = { user: user._id, email: user.email }; // Customize the payload as needed
+    const payload = {
+      user: user._id,
+      email: user.email,
+      userType: user.userType,
+    };
     const secretKey = 'vwHjkCZ8WDIRRe99'; // Replace with your actual secret key
     const expiresIn = '1h'; // Adjust expiresIn as needed
 
