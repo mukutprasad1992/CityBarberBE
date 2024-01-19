@@ -21,7 +21,7 @@ export class UserService {
 
   //Register a new user and password is hashed
   async register(signUpDto: SignUpDto): Promise<User> {
-    const { name, email, password } = signUpDto;
+    const { name, email, password,userType } = signUpDto;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -29,6 +29,7 @@ export class UserService {
       name,
       email,
       password: hashedPassword,
+      userType
     });
 
     return user;
