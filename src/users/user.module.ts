@@ -9,9 +9,9 @@ import { ConfigService } from '@nestjs/config';
 import { AuthController } from 'src/auth/controller/auth.controller';
 import { AuthService } from 'src/auth/service/auth.service';
 
-
 @Module({
-  imports: [userModel,
+  imports: [
+    userModel,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],

@@ -8,6 +8,7 @@ import { State, StateSchema } from 'src/schemas/state.schema';
 import { Country, CountrySchema } from 'src/schemas/country.schema';
 // import { UserModule } from 'src/users/user.module';
 import { User, UserSchema } from 'src/schemas/user.schema';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { User, UserSchema } from 'src/schemas/user.schema';
       { name: Country.name, schema: CountrySchema },
       { name: User.name, schema: UserSchema },
     ]),
+    AuthModule,
   ],
   providers: [ConsumerService],
   controllers: [ConsumerController],

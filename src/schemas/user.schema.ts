@@ -20,4 +20,4 @@ export class User extends Document {
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 
-export const userModel: Model<User> =  mongoose.model('User', UserSchema);
+export const userModel: Model<User> = mongoose.model('User', UserSchema);

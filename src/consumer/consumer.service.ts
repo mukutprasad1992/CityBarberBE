@@ -52,9 +52,9 @@ export class ConsumerService {
   async getAllConsumers(): Promise<Consumer[]> {
     return this.consumerModel.find().populate('user').exec();
   }
-  async getConsumerById(id: string): Promise<Consumer> {
+  async getConsumerById(userId: string): Promise<Consumer> {
     const consumer = await this.consumerModel
-      .findById(id)
+      .findOne({ user: userId })
       .populate('user')
       .exec();
 
@@ -66,11 +66,11 @@ export class ConsumerService {
   }
   //update Consumer
   async updateConsumer(
-    id: string,
+    userId: string,
     updateConsumerDto: CreateConsumerDto,
   ): Promise<Consumer> {
     const existingConsumer = await this.consumerModel
-      .findById(id)
+      .findOne({ user: userId })
       .populate('user')
       .exec();
 
@@ -126,17 +126,15 @@ export class ConsumerService {
     return existingConsumer.save();
   }
 
-  async deleteConsumer(id: string): Promise<{ message: string }> {
+  async deleteConsumer(userId: string): Promise<{ message: string }> {
     const existingConsumer = await this.consumerModel
-      .findById(id)
+      .findOneAndDelete({ user: userId }) // Use findOneAndDelete to find and delete the consumer
       .populate('user')
       .exec();
 
     if (!existingConsumer) {
       throw new NotFoundException('Consumer not found');
     }
-
-    await this.consumerModel.deleteOne({ _id: id });
 
     return { message: 'Consumer has been deleted' };
   }

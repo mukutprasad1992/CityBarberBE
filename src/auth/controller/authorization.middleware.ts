@@ -12,8 +12,14 @@ export class AuthorizationMiddleware implements NestMiddleware {
       const token = authorizationHeader.replace('Bearer ', '');
 
       try {
-        const decodedToken = jwt.verify(token, process.env.ForgetPasswordKey) as { userId: string };
-        req.decodedToken = decodedToken;
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET) as {
+          userId: string;
+          userType: string;
+        };
+        req.user = {
+          userId: decodedToken.userId,
+          userType: decodedToken.userType,
+        };
         console.log('Decoded Token:', decodedToken);
       } catch (error) {
         // Handle token verification error if needed

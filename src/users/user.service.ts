@@ -5,6 +5,7 @@ import { Model } from 'mongoose'; // Import the Model type from mongoose
 import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from '../dto/signup.dto';
 import { UpdateUserDto } from 'src/dto/updateUser.dto';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 //Making user class and constructor
@@ -13,15 +14,10 @@ export class UserService {
     @InjectModel(User.name)
     private userModel: Model<User>,
   ) {}
-  //This function is not used anywhere
-  async create(user: User): Promise<User> {
-    const res = await this.userModel.create(user);
-    return res;
-  }
 
   //Register a new user and password is hashed
-  async register(signUpDto: SignUpDto): Promise<User> {
-    const { name, email, password,userType } = signUpDto;
+  async register(signUpDto: SignUpDto): Promise<{ user: User; token: string }> {
+    const { name, email, password, userType } = signUpDto;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -29,11 +25,28 @@ export class UserService {
       name,
       email,
       password: hashedPassword,
-      userType
+      userType,
     });
+    const token = this.generateToken(user);
 
-    return user;
+    return { user, token };
   }
+  private generateToken(user: User): string {
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        userType: user.userType,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1h', // You can adjust the token expiration time as needed
+      },
+    );
+    return token;
+  }
+
   /* 
 
 Making user CRUD Operations
@@ -47,11 +60,18 @@ Making user CRUD Operations
 
   //Fetch Unique user by id
   async findbyId(id: string): Promise<User> {
-    const user = await this.userModel.findById(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
+    try {
+      const user = await this.userModel.findById(id);
+      if (!user) {
+        console.log(`User with ID ${id} not found.`);
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    } catch (error) {
+      // Log the error for further investigation
+      console.error('Error in findbyId:', error);
+      throw error; // Rethrow the error
     }
-    return user;
   }
 
   //Update user by id
