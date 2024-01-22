@@ -38,6 +38,7 @@ export const ConsumerSchema = SchemaFactory.createForClass(Consumer).set(
   {
     transform: (doc, ret) => {
       delete ret.user.password;
+      ret.user = ret.user._id;
       return ret;
     },
   },

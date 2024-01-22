@@ -24,7 +24,7 @@ export class ConsumerController {
     @Req() req,
   ) {
     const userId = req.user.userId;
-    const userType = req.user.userType; // Make sure to get userType from req.user
+    const userType = req.user.userType;
 
     if (userType !== 'consumer') {
       throw new NotFoundException(
@@ -37,7 +37,11 @@ export class ConsumerController {
         createConsumerDto,
         userId,
       );
-      return { message: 'Consumer created successfully', consumer };
+      return {
+        success: true,
+        message: 'Consumer created successfully',
+        consumer,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
@@ -47,7 +51,8 @@ export class ConsumerController {
   }
   @Get('all')
   async getAllConsumers() {
-    return this.consumerService.getAllConsumers();
+    const consumers = await this.consumerService.getAllConsumers();
+    return { success: true, consumers };
   }
 
   @Get('profile')
@@ -63,7 +68,8 @@ export class ConsumerController {
     }
 
     try {
-      return await this.consumerService.getConsumerById(userId);
+      const consumer = await this.consumerService.getConsumerById(userId);
+      return { success: true, consumer };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
@@ -87,10 +93,11 @@ export class ConsumerController {
     }
 
     try {
-      return await this.consumerService.updateConsumer(
+      const updatedConsumer = await this.consumerService.updateConsumer(
         userId,
         updateConsumerDto,
       );
+      return { success: true, consumer: updatedConsumer };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
@@ -100,7 +107,9 @@ export class ConsumerController {
   }
   @Delete('delete')
   @UseGuards(JwtAuthGuard)
-  async deleteConsumerProfile(@Req() req) {
+  async deleteConsumerProfile(
+    @Req() req,
+  ): Promise<{ success: true; message: string }> {
     const userId = req.user.userId;
     const userType = req.user.userType;
 
@@ -111,7 +120,8 @@ export class ConsumerController {
     }
 
     try {
-      return await this.consumerService.deleteConsumer(userId);
+      await this.consumerService.deleteConsumer(userId);
+      return { success: true, message: 'Consumer has been deleted' };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);

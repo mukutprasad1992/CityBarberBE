@@ -22,7 +22,7 @@ export class UserController {
   @Post('/register')
   async signUp(
     @Body() signUpDto: SignUpDto,
-  ): Promise<{ user: User; token: string }> {
+  ): Promise<{ success: boolean; user: User; token: string }> {
     return this.userService.register(signUpDto);
   }
   /* 
@@ -31,13 +31,13 @@ export class UserController {
 
   //Get all users use (/user/all)
   @Get('/all')
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<{ success: boolean; user: User[] }> {
     return this.userService.findAll();
   }
   //Get user by id use (/user/:id)
   @Get('/profile')
   @UseGuards(JwtAuthGuard)
-  async getUserProfile(@Req() req): Promise<User> {
+  async getUserProfile(@Req() req): Promise<{ success: true; user: User }> {
     const userId = req.user.userId;
 
     try {
@@ -47,7 +47,7 @@ export class UserController {
       // Now you can access the user details
       console.log(user);
 
-      return user;
+      return { success: true, user };
     } catch (error) {
       // Handle the error, for example, log it
       console.error('Error retrieving user profile:', error);
@@ -61,11 +61,15 @@ export class UserController {
   async updateUser(
     @Req() req,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<{ success: true; user: User }> {
     const userId = req.user.userId;
 
     try {
-      return await this.userService.updateById(userId, updateUserDto);
+      const updatedUser = await this.userService.updateById(
+        userId,
+        updateUserDto,
+      );
+      return { success: true, user: updatedUser };
     } catch (error) {
       // Handle specific error cases if needed
       if (error instanceof NotFoundException) {
@@ -78,12 +82,14 @@ export class UserController {
   }
   @Delete('/delete')
   @UseGuards(JwtAuthGuard)
-  async deleteUserById(@Req() req): Promise<{ message: string }> {
+  async deleteUserById(
+    @Req() req,
+  ): Promise<{ success: true; message: string }> {
     const userId = req.user.userId;
 
     try {
       await this.userService.deleteById(userId);
-      return { message: 'User has been deleted' };
+      return { success: true, message: 'User has been deleted' };
     } catch (error) {
       // Handle specific error cases if needed
       if (error instanceof NotFoundException) {

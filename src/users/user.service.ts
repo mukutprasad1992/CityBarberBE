@@ -16,7 +16,9 @@ export class UserService {
   ) {}
 
   //Register a new user and password is hashed
-  async register(signUpDto: SignUpDto): Promise<{ user: User; token: string }> {
+  async register(
+    signUpDto: SignUpDto,
+  ): Promise<{ success: boolean; user: User; token: string }> {
     const { name, email, password, userType } = signUpDto;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,7 +31,7 @@ export class UserService {
     });
     const token = this.generateToken(user);
 
-    return { user, token };
+    return { success: true, user, token };
   }
   private generateToken(user: User): string {
     const token = jwt.sign(
@@ -53,9 +55,9 @@ Making user CRUD Operations
 
 */
   //Get all the users
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<{ success: boolean; user: User[] }> {
     const user = await this.userModel.find();
-    return user;
+    return { success: true, user };
   }
 
   //Fetch Unique user by id
@@ -92,7 +94,7 @@ Making user CRUD Operations
     return updatedUserData;
   }
 
-  async deleteById(id: string): Promise<string> {
+  async deleteById(id: string): Promise<{ success: true; message: string }> {
     // Find the user by ID
     const existingUser = await this.userModel.findById(id);
 
@@ -104,6 +106,6 @@ Making user CRUD Operations
     // Delete the user
     await this.userModel.deleteOne({ _id: id });
 
-    return 'User has been deleted';
+    return { success: true, message: 'User has been deleted' };
   }
 }
