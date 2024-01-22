@@ -28,4 +28,5 @@ export class CreateProviderDto {
   @IsNotEmpty()
   @IsString()
   country: string;
+    profileImage: any;
 }

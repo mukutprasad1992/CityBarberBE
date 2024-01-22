@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString,IsIn, MinLength } from 'class-validator';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -16,5 +16,6 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsString()
+  @IsIn(['consumer', 'provider'], { message: 'Invalid userType. Must be either "consumer" or "provider".' })
   readonly userType: string;
 }
