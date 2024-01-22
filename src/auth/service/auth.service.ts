@@ -1,18 +1,19 @@
-  import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-  import  { Model } from 'mongoose';
-  import { InjectModel } from '@nestjs/mongoose';
-  import { User } from '../../schemas/user.schema';
-  import * as bcrypt from 'bcrypt';
-  import * as jwt from 'jsonwebtoken';
-  import * as nodemailer from 'nodemailer';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from '../../schemas/user.schema';
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
+import * as nodemailer from 'nodemailer';
 
-  @Injectable()
-  export class AuthService {
-      verifyToken(token: string) {
-          throw new Error('Method not implemented.');
-      }
-  
-    private transporter: nodemailer.Transporter;
+@Injectable()
+export class AuthService {
+ 
+  private transporter: nodemailer.Transporter;
 
     constructor(@InjectModel(User.name) private userModel: Model<User>) {
       this.transporter = nodemailer.createTransport({ service: 'gmail',
@@ -78,17 +79,33 @@
         text: `Click the following link to reset your password: ${resetLink}`,
       };
 
-      // Send the email
-      await this.transporter.sendMail(mailOptions);
-    }
-    
-      generateToken(user: User): string {
-        const payload = { user: user._id, email: user.email, userType: user.userType }; // Customize the payload as needed
-        const secretKey = process.env.jwtKey; // Replace with your actual secret key
-        const expiresIn = '1h'; // Adjust expiresIn as needed
-    
-        return jwt.sign(payload, secretKey, { expiresIn });
-      }
-    
+    // Send the email
+    await this.transporter.sendMail(mailOptions);
   }
 
+  generateToken(user: User): string {
+    const payload = {
+      user: user._id,
+      email: user.email,
+      userType: user.userType,
+    };
+    const secretKey = 'vwHjkCZ8WDIRRe99'; // Replace with your actual secret key
+    const expiresIn = '1h'; // Adjust expiresIn as needed
+
+    return jwt.sign(payload, secretKey, { expiresIn });
+  }
+
+  verifyToken(token: string): Promise<{ userId: string }> {
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+        if (err) {
+          // Token verification failed
+          reject(new UnauthorizedException('Invalid token'));
+        } else {
+          // Token is valid, resolve with decoded token
+          resolve(decodedToken as { userId: string });
+        }
+      });
+    });
+  }
+}
