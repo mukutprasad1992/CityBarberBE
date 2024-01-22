@@ -8,6 +8,9 @@
 
   @Injectable()
   export class AuthService {
+      verifyToken(token: string) {
+          throw new Error('Method not implemented.');
+      }
   
     private transporter: nodemailer.Transporter;
 
@@ -81,7 +84,7 @@
     
       generateToken(user: User): string {
         const payload = { user: user._id, email: user.email, userType: user.userType }; // Customize the payload as needed
-        const secretKey = 'vwHjkCZ8WDIRRe99'; // Replace with your actual secret key
+        const secretKey = process.env.jwtKey; // Replace with your actual secret key
         const expiresIn = '1h'; // Adjust expiresIn as needed
     
         return jwt.sign(payload, secretKey, { expiresIn });
