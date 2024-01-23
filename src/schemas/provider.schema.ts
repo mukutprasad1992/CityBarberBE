@@ -30,7 +30,7 @@ export class Provider extends Document {
 
   @Prop({ required: true, validate: { validator: (value: string) => /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i.test(value), message: 'Invalid profile image URL.' } })
   profileImage: string;
-
+  
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: User.name, required: true })
   user: User;
 }

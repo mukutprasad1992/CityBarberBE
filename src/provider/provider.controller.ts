@@ -9,7 +9,7 @@ export class ProviderController {
   constructor(private readonly providerService: ProviderService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)`
   async createProvider(@Body() createProviderDto: CreateProviderDto) {
     try {
       const createdProvider = await this.providerService.createProvider(createProviderDto);

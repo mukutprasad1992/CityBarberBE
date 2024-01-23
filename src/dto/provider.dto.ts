@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsString, IsOptional, IsPhoneNumber, IsPostalCode } from 'class-validator';
 
-export class CreateProviderDto {
+export class 
+CreateProviderDto {
   @IsNotEmpty()
   @IsPhoneNumber(undefined || null, { message: 'Primary phone number is invalid' })
   primaryPhoneNumber: string;
@@ -29,6 +30,10 @@ export class CreateProviderDto {
   @IsString()
   country: string;
     profileImage: any;
+
+    @IsNotEmpty()
+    @IsString()
+    user: string;
 }
 
 

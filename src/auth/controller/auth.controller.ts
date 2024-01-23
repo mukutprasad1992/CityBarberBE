@@ -20,9 +20,10 @@ export class AuthController {
   }
 
   @Post('/login')
-  async login(
-    @Body() credentials: { email: string; password: string },
-  ): Promise<{ token: string }> {
+async login(
+  @Body() credentials: { email: string; password: string },
+): Promise<{ success: boolean; token?: string; error?: string }> {
+  try {
     const user = await this.authService.findByEmail(credentials.email);
 
     if (!user) {
@@ -40,8 +41,13 @@ export class AuthController {
 
     // Assuming you have a method in your AuthService to generate a JWT token
     const token = this.authService.generateToken(user);
-    return { token };
+    
+    return { success: true, token };
+  } catch (error) {
+    return { success: false, error: 'Authentication failed' };
   }
+}
+
 
   @Post('/forgot-password')
   async forgotPassword(

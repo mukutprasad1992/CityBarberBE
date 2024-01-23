@@ -8,14 +8,38 @@ import { Provider } from 'src/schemas/provider.schema';
 
 @Injectable()
 export class ProviderService {
+  cityModel: any;
+  stateModel: any;
+  countryModel: any;
   constructor(
     @InjectModel(Provider.name) private readonly providerModel: Model<Provider>,
   ) {}
 
   async createProvider(createProviderDto: CreateProviderDto): Promise<Provider> {
+    // Validate and get the city, state, and country
+    const city = await this.cityModel.findOne({
+      cityName: createProviderDto.city,
+    });
+    const state = await this.stateModel.findOne({
+      stateName: createProviderDto.state,
+    });
+    const country = await this.countryModel.findOne({
+      countryName: createProviderDto.country,
+    });
+
+    if (!city || !state || !country) {
+      throw new Error('Invalid city, state, or country');
+    }
+
+    // Save provider information to the database
     const createdProvider = new this.providerModel(createProviderDto);
+    createdProvider.city = city;
+    createdProvider.state = state;
+    createdProvider.country = country;
+
     return createdProvider.save();
   }
+
 
   async getAllProviders(): Promise<Provider[]> {
     return this.providerModel.find().exec();
