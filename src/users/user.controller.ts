@@ -8,6 +8,9 @@ import {
   NotFoundException,
   UseGuards,
   Req,
+  ValidationPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../schemas/user.schema';
@@ -20,11 +23,53 @@ export class UserController {
   constructor(private userService: UserService) {}
   //used to register a new user
   @Post('/register')
-  async signUp(
-    @Body() signUpDto: SignUpDto,
-  ): Promise<{ success: boolean; user: User; token: string }> {
-    return this.userService.register(signUpDto);
+  async signUp(@Body(new ValidationPipe()) signUpDto: SignUpDto): Promise<{
+    statusCode?: number;
+    message: string;
+    success: boolean;
+    user: User;
+    token: string;
+  }> {
+    try {
+      const response = await this.userService.register(signUpDto);
+
+      if (response.success) {
+        return {
+          success: true,
+          message: response.message,
+          user: response.user,
+          token: response.token,
+        };
+      } else {
+        return {
+          success: false,
+          message: response.message,
+          statusCode: response.statusCode,
+          user: null,
+          token: null,
+        };
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        return {
+          success: false,
+          message: error.message,
+          statusCode: error.getStatus(),
+          user: null,
+          token: null,
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Internal Server Error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          user: null,
+          token: null,
+        };
+      }
+    }
   }
+
   /* 
   CRUD Operations Controllers 
   */
