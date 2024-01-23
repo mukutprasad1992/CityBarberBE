@@ -8,6 +8,9 @@ import {
   NotFoundException,
   UseGuards,
   Req,
+  ValidationPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../schemas/user.schema';
@@ -20,24 +23,66 @@ export class UserController {
   constructor(private userService: UserService) {}
   //used to register a new user
   @Post('/register')
-  async signUp(
-    @Body() signUpDto: SignUpDto,
-  ): Promise<{ user: User; token: string }> {
-    return this.userService.register(signUpDto);
+  async signUp(@Body(new ValidationPipe()) signUpDto: SignUpDto): Promise<{
+    statusCode?: number;
+    message: string;
+    success: boolean;
+    user: User;
+    token: string;
+  }> {
+    try {
+      const response = await this.userService.register(signUpDto);
+
+      if (response.success) {
+        return {
+          success: true,
+          message: response.message,
+          user: response.user,
+          token: response.token,
+        };
+      } else {
+        return {
+          success: false,
+          message: response.message,
+          statusCode: response.statusCode,
+          user: null,
+          token: null,
+        };
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        return {
+          success: false,
+          message: error.message,
+          statusCode: error.getStatus(),
+          user: null,
+          token: null,
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Internal Server Error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          user: null,
+          token: null,
+        };
+      }
+    }
   }
+
   /* 
   CRUD Operations Controllers 
   */
 
   //Get all users use (/user/all)
   @Get('/all')
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<{ success: boolean; user: User[] }> {
     return this.userService.findAll();
   }
   //Get user by id use (/user/:id)
   @Get('/profile')
   @UseGuards(JwtAuthGuard)
-  async getUserProfile(@Req() req): Promise<User> {
+  async getUserProfile(@Req() req): Promise<{ success: true; user: User }> {
     const userId = req.user.userId;
 
     try {
@@ -47,7 +92,7 @@ export class UserController {
       // Now you can access the user details
       console.log(user);
 
-      return user;
+      return { success: true, user };
     } catch (error) {
       // Handle the error, for example, log it
       console.error('Error retrieving user profile:', error);
@@ -61,11 +106,15 @@ export class UserController {
   async updateUser(
     @Req() req,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<{ success: true; user: User }> {
     const userId = req.user.userId;
 
     try {
-      return await this.userService.updateById(userId, updateUserDto);
+      const updatedUser = await this.userService.updateById(
+        userId,
+        updateUserDto,
+      );
+      return { success: true, user: updatedUser };
     } catch (error) {
       // Handle specific error cases if needed
       if (error instanceof NotFoundException) {
@@ -78,12 +127,14 @@ export class UserController {
   }
   @Delete('/delete')
   @UseGuards(JwtAuthGuard)
-  async deleteUserById(@Req() req): Promise<{ message: string }> {
+  async deleteUserById(
+    @Req() req,
+  ): Promise<{ success: true; message: string }> {
     const userId = req.user.userId;
 
     try {
       await this.userService.deleteById(userId);
-      return { message: 'User has been deleted' };
+      return { success: true, message: 'User has been deleted' };
     } catch (error) {
       // Handle specific error cases if needed
       if (error instanceof NotFoundException) {

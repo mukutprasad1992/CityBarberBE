@@ -19,7 +19,7 @@ export class ConsumerService {
   async create(
     createConsumerDto: CreateConsumerDto,
     userId: string,
-  ): Promise<Consumer> {
+  ): Promise<{ success: true; consumer: Consumer }> {
     const user = await this.userModel.findById(userId);
 
     if (!user) {
@@ -46,13 +46,16 @@ export class ConsumerService {
     consumer.state = state;
     consumer.country = country;
     consumer.user = user;
-
-    return consumer.save();
+    const savedConsumer = await consumer.save();
+    return { success: true, consumer: savedConsumer };
   }
-  async getAllConsumers(): Promise<Consumer[]> {
-    return this.consumerModel.find().populate('user').exec();
+  async getAllConsumers(): Promise<{ success: true; consumers: Consumer[] }> {
+    const consumers = await this.consumerModel.find().populate('user').exec();
+    return { success: true, consumers };
   }
-  async getConsumerById(userId: string): Promise<Consumer> {
+  async getConsumerById(
+    userId: string,
+  ): Promise<{ success: true; consumer: Consumer }> {
     const consumer = await this.consumerModel
       .findOne({ user: userId })
       .populate('user')
@@ -62,13 +65,13 @@ export class ConsumerService {
       throw new NotFoundException('Consumer not found');
     }
 
-    return consumer;
+    return { success: true, consumer };
   }
   //update Consumer
   async updateConsumer(
     userId: string,
     updateConsumerDto: CreateConsumerDto,
-  ): Promise<Consumer> {
+  ): Promise<{ success: true; consumer: Consumer }> {
     const existingConsumer = await this.consumerModel
       .findOne({ user: userId })
       .populate('user')
@@ -123,10 +126,13 @@ export class ConsumerService {
     }
 
     // Save the updated consumer
-    return existingConsumer.save();
+    const updatedConsumer = await existingConsumer.save();
+    return { success: true, consumer: updatedConsumer };
   }
 
-  async deleteConsumer(userId: string): Promise<{ message: string }> {
+  async deleteConsumer(
+    userId: string,
+  ): Promise<{ success: true; message: string }> {
     const existingConsumer = await this.consumerModel
       .findOneAndDelete({ user: userId }) // Use findOneAndDelete to find and delete the consumer
       .populate('user')
@@ -136,6 +142,6 @@ export class ConsumerService {
       throw new NotFoundException('Consumer not found');
     }
 
-    return { message: 'Consumer has been deleted' };
+    return { success: true, message: 'Consumer has been deleted' };
   }
 }
