@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../schemas/user.schema';
 import { Model } from 'mongoose'; // Import the Model type from mongoose
@@ -6,7 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from '../dto/signup.dto';
 import { UpdateUserDto } from 'src/dto/updateUser.dto';
 import * as jwt from 'jsonwebtoken';
-
+import { validate } from 'class-validator';
 @Injectable()
 //Making user class and constructor
 export class UserService {
@@ -16,21 +21,75 @@ export class UserService {
   ) {}
 
   //Register a new user and password is hashed
-  async register(signUpDto: SignUpDto): Promise<{ user: User; token: string }> {
-    const { name, email, password, userType } = signUpDto;
+  // userService.ts
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  // ...
 
-    const user = await this.userModel.create({
-      name,
-      email,
-      password: hashedPassword,
-      userType,
-    });
-    const token = this.generateToken(user);
+  async register(signUpDto: SignUpDto): Promise<{
+    message: string;
+    success: boolean;
+    user?: User;
+    token?: string;
+    statusCode?: number;
+  }> {
+    try {
+      const validationErrors = await validate(signUpDto);
 
-    return { user, token };
+      if (validationErrors.length > 0) {
+        const errorMessage = validationErrors
+          .map((error) => Object.values(error.constraints).join(', '))
+          .join(', ');
+
+        throw new HttpException(
+          { message: errorMessage, success: false },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const { name, email, password, userType } = signUpDto;
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const user = await this.userModel.create({
+        name,
+        email,
+        password: hashedPassword,
+        userType,
+      });
+
+      const token = this.generateToken(user);
+
+      return {
+        message: 'User created successfully',
+        success: true,
+        user,
+        token,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        // Handle validation error differently
+        return {
+          message: error.message,
+          success: false,
+          user: undefined,
+          token: undefined,
+          statusCode: error.getStatus(),
+        };
+      } else {
+        // Handle other unexpected errors
+        return {
+          message: 'Failed to register user',
+          success: false,
+          user: undefined,
+          token: undefined,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }
   }
+
+  // ...
+
   private generateToken(user: User): string {
     const token = jwt.sign(
       {
@@ -53,9 +112,9 @@ Making user CRUD Operations
 
 */
   //Get all the users
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<{ success: boolean; user: User[] }> {
     const user = await this.userModel.find();
-    return user;
+    return { success: true, user };
   }
 
   //Fetch Unique user by id
@@ -92,7 +151,7 @@ Making user CRUD Operations
     return updatedUserData;
   }
 
-  async deleteById(id: string): Promise<string> {
+  async deleteById(id: string): Promise<{ success: true; message: string }> {
     // Find the user by ID
     const existingUser = await this.userModel.findById(id);
 
@@ -104,6 +163,6 @@ Making user CRUD Operations
     // Delete the user
     await this.userModel.deleteOne({ _id: id });
 
-    return 'User has been deleted';
+    return { success: true, message: 'User has been deleted' };
   }
 }
