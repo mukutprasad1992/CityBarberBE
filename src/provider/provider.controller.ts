@@ -3,17 +3,19 @@ import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nes
 import { ProviderService } from './provider.service';
 import { CreateProviderDto, UpdateProviderDto } from 'src/dto/provider.dto';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard'; 
+import { Provider } from 'src/schemas/provider.schema';
 
 @Controller('providers')
 export class ProviderController {
   constructor(private readonly providerService: ProviderService) {}
 
   @Post()
-  // @UseGuards(JwtAuthGuard)`
-  async createProvider(@Body() createProviderDto: CreateProviderDto) {
+  @UseGuards(JwtAuthGuard)
+  async createProvider(@Body() createProviderDto: CreateProviderDto 
+    ) {
     try {
       const createdProvider = await this.providerService.createProvider(createProviderDto);
-
+console.log("createdProvider:",createdProvider)
       return {
         success: true,
         data: createdProvider,

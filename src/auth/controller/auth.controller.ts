@@ -7,7 +7,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
-import { User } from '../../schemas/user.schema';
+import { User, UserType } from '../../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 
 @Controller('auth')
@@ -20,33 +20,34 @@ export class AuthController {
   }
 
   @Post('/login')
-async login(
-  @Body() credentials: { email: string; password: string },
-): Promise<{ success: boolean; token?: string; error?: string }> {
-  try {
-    const user = await this.authService.findByEmail(credentials.email);
+  async login(
+    @Body() credentials: { email: string; password: string },
+  ): Promise<{ success: boolean; token?: string; userType?: UserType; error?: string }> {
+    try {
+      const user = await this.authService.findByEmail(credentials.email);
 
-    if (!user) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      if (!user) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
+
+      const isPasswordValid = await this.authService.verifyPassword(
+        user,
+        credentials.password,
+      );
+
+      if (!isPasswordValid) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
+
+      const token = this.authService.generateToken(user);
+      const userType = user.userType;
+
+      return { success: true, token, userType };
+    } catch (error) {
+      return { success: false, error: 'Authentication failed' };
     }
-
-    const isPasswordValid = await this.authService.verifyPassword(
-      user,
-      credentials.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    }
-
-    // Assuming you have a method in your AuthService to generate a JWT token
-    const token = this.authService.generateToken(user);
-    
-    return { success: true, token };
-  } catch (error) {
-    return { success: false, error: 'Authentication failed' };
   }
-}
+
 
 
   @Post('/forgot-password')

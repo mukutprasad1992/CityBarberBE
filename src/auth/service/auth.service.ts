@@ -83,17 +83,21 @@ export class AuthService {
     await this.transporter.sendMail(mailOptions);
   }
 
-  generateToken(user: User): string {
-    const payload = {
-      user: user._id,
-      email: user.email,
-      userType: user.userType,
-    };
-    const secretKey = 'vwHjkCZ8WDIRRe99'; // Replace with your actual secret key
-    const expiresIn = '1h'; // Adjust expiresIn as needed
-
-    return jwt.sign(payload, secretKey, { expiresIn });
-  }
+   generateToken(user: User): string {
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        userType: user.userType,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1h', // You can adjust the token expiration time as needed
+      },
+    );
+    return token;
+  }
 
  async verifyToken(token: string): Promise<{ userId: string }> {
     return new Promise((resolve, reject) => {

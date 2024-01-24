@@ -5,6 +5,16 @@ import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable CORS
+  // Example with custom CORS configuration
+app.enableCors({
+  origin: "*", // Specify the allowed origin
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // Allow cookies and HTTP authentication headers
+});
+
+
   // Apply the ValidationPipe globally
   app.useGlobalPipes(
     new ValidationPipe({
@@ -22,8 +32,10 @@ async function bootstrap() {
       },
     }),
   );
+  
   app.use(new AuthorizationMiddleware().use); // Apply the middleware globally
 
   await app.listen(3000);
 }
+
 bootstrap();
