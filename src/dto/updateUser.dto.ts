@@ -1,13 +1,13 @@
 // update-user.dto.ts
 
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   readonly name: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEmail({}, { message: 'Please enter a valid email' })
   readonly email: string;
 }
