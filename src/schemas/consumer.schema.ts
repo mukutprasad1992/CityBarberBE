@@ -37,8 +37,10 @@ export const ConsumerSchema = SchemaFactory.createForClass(Consumer).set(
   'toJSON',
   {
     transform: (doc, ret) => {
-      delete ret.user.password;
-      ret.user = ret.user._id;
+      if (ret.user) {
+        delete ret.user.password;
+        ret.user = ret.user._id;
+      }
       return ret;
     },
   },
