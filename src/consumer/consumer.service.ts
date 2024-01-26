@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Consumer } from 'src/schemas/consumer.schema';
-import { CreateConsumerDto } from 'src/dto/consumer.dto';
+import { CreateConsumerDto, UpdateConsumerDto } from 'src/dto/consumer.dto';
 import { City } from 'src/schemas/city.schema';
 import { State } from 'src/schemas/state.schema';
 import { Country } from 'src/schemas/country.schema';
@@ -25,6 +30,15 @@ export class ConsumerService {
     if (!user) {
       throw new Error('User not found');
     }
+    const existingConsumer = await this.consumerModel.findOne({ user: userId });
+
+    if (existingConsumer) {
+      throw new HttpException(
+        'Consumer details already exist for this user',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // Validate and get the city, state, and country
     const city = await this.cityModel.findOne({
       cityName: createConsumerDto.city,
@@ -37,7 +51,10 @@ export class ConsumerService {
     });
 
     if (!city || !state || !country) {
-      throw new Error('Invalid city, state, or country');
+      throw new HttpException(
+        'Invalid city, state, or country',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // Save consumer information to the database
@@ -50,9 +67,18 @@ export class ConsumerService {
     return { success: true, consumer: savedConsumer };
   }
   async getAllConsumers(): Promise<{ success: true; consumers: Consumer[] }> {
-    const consumers = await this.consumerModel.find().populate('user').exec();
-    return { success: true, consumers };
+    try {
+      const consumers = await this.consumerModel.find().populate('user').exec();
+      return { success: true, consumers };
+    } catch (error) {
+      console.error('Error fetching consumers:', error);
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
+
   async getConsumerById(
     userId: string,
   ): Promise<{ success: true; consumer: Consumer }> {
@@ -70,7 +96,7 @@ export class ConsumerService {
   //update Consumer
   async updateConsumer(
     userId: string,
-    updateConsumerDto: CreateConsumerDto,
+    updateConsumerDto: UpdateConsumerDto,
   ): Promise<{ success: true; consumer: Consumer }> {
     const existingConsumer = await this.consumerModel
       .findOne({ user: userId })

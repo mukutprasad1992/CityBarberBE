@@ -12,12 +12,14 @@ import { SignUpDto } from '../dto/signup.dto';
 import { UpdateUserDto } from 'src/dto/updateUser.dto';
 import * as jwt from 'jsonwebtoken';
 import { validate } from 'class-validator';
+import { Consumer } from 'src/schemas/consumer.schema';
 @Injectable()
 //Making user class and constructor
 export class UserService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
+    @InjectModel(Consumer.name) private consumerModel: Model<Consumer>,
   ) {}
 
   //Register a new user and password is hashed
@@ -151,7 +153,9 @@ Making user CRUD Operations
     return updatedUserData;
   }
 
-  async deleteById(id: string): Promise<{ success: true; message: string }> {
+  async deleteById(
+    id: string,
+  ): Promise<{ success: boolean; message?: string }> {
     // Find the user by ID
     const existingUser = await this.userModel.findById(id);
 
@@ -159,7 +163,7 @@ Making user CRUD Operations
     if (!existingUser) {
       throw new NotFoundException('User not found');
     }
-
+    await this.consumerModel.deleteOne({ user: existingUser._id });
     // Delete the user
     await this.userModel.deleteOne({ _id: id });
 
