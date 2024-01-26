@@ -83,21 +83,25 @@ export class AuthService {
     await this.transporter.sendMail(mailOptions);
   }
 
-   generateToken(user: User): string {
+  generateToken(user: User): string {
+    const tokenContent = {
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      userType: user.userType,
+    };
+    console.log('Token Content before signing:', tokenContent);
+  
     const token = jwt.sign(
-      {
-        userId: user._id,
-        name: user.name,
-        email: user.email,
-        userType: user.userType,
-      },
+      tokenContent,
       process.env.JWT_SECRET,
       {
-        expiresIn: '1h', // You can adjust the token expiration time as needed
+        expiresIn: '1h',
       },
     );
-    return token;
-  }
+    return token;
+  }
+  
 
  async verifyToken(token: string): Promise<{ userId: string }> {
     return new Promise((resolve, reject) => {
@@ -113,4 +117,6 @@ export class AuthService {
       });
     });
   }
+
+  
 }

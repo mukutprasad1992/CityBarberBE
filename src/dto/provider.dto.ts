@@ -1,13 +1,22 @@
-import { IsNotEmpty, IsString, IsOptional, IsPhoneNumber, IsPostalCode } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsPhoneNumber,
+  IsPostalCode,
+} from 'class-validator';
 
-export class 
-CreateProviderDto {
+export class CreateProviderDto {
   @IsNotEmpty()
-  @IsPhoneNumber(undefined || null, { message: 'Primary phone number is invalid' })
+  @IsPhoneNumber(undefined || null, {
+    message: 'Primary phone number is invalid',
+  })
   primaryPhoneNumber: string;
 
   @IsOptional()
-  @IsPhoneNumber(undefined || null, { message: 'Secondary phone number is invalid' })
+  @IsPhoneNumber(undefined || null, {
+    message: 'Secondary phone number is invalid',
+  })
   secondaryPhoneNumber?: string;
 
   @IsNotEmpty()
@@ -29,20 +38,18 @@ CreateProviderDto {
   @IsNotEmpty()
   @IsString()
   country: string;
-    profileImage: any;
+  profileImage: any;
 
-    @IsNotEmpty()
-    @IsString()
-    user: string;
+ 
 }
-
 
 // update-provider.dto.ts
 
-
 export class UpdateProviderDto {
   @IsOptional()
-  @IsPhoneNumber(undefined || null, { message: 'Secondary phone number is invalid' })
+  @IsPhoneNumber(undefined || null, {
+    message: 'Secondary phone number is invalid',
+  })
   secondaryPhoneNumber?: string;
 
   @IsOptional()

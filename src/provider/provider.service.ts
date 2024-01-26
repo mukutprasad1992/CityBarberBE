@@ -1,6 +1,6 @@
 // provider.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateProviderDto, UpdateProviderDto } from 'src/dto/provider.dto';
@@ -8,9 +8,12 @@ import { City } from 'src/schemas/city.schema';
 import { Country } from 'src/schemas/country.schema';
 import { Provider } from 'src/schemas/provider.schema';
 import { State } from 'src/schemas/state.schema';
+import { User } from 'src/schemas/user.schema';
+
 
 @Injectable()
 export class ProviderService {
+  
   // cityModel: any;
   // stateModel: any;
   // countryModel: any;
@@ -19,28 +22,35 @@ export class ProviderService {
     @InjectModel(City.name) private readonly cityModel: Model<City>,
     @InjectModel(State.name) private readonly stateModel: Model<State>,
     @InjectModel(Country.name) private readonly countryModel: Model<Country>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
-  async createProvider(createProviderDto: CreateProviderDto 
-    ): Promise<Provider> {
+
+  
+  
+  async createProvider(createProviderDto: CreateProviderDto, userId: string): Promise<Provider> {
+    // Check if the user exists and has the userType 'provider'
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user || user.userType !== 'provider') {
+      throw new UnauthorizedException('User does not have the required userType for provider creation');
+    }
+
     // Validate and get the city, state, and country
     const city = await this.cityModel.findOne({
       cityName: createProviderDto.city,
     });
-    console.log("city:", city)
+
     const state = await this.stateModel.findOne({
       stateName: createProviderDto.state,
     });
-    console.log("state:", state)
 
     const country = await this.countryModel.findOne({
       countryName: createProviderDto.country,
     });
-    console.log("country:",country)
-
 
     if (!city || !state || !country) {
-      throw new Error('Invalid city, state, or country');
+      throw new NotFoundException('Invalid city, state, or country');
     }
 
     // Save provider information to the database
@@ -48,21 +58,54 @@ export class ProviderService {
     createdProvider.city = city;
     createdProvider.state = state;
     createdProvider.country = country;
+    createdProvider.user = user;
 
     return createdProvider.save();
   }
-
-
+  
+  
   async getAllProviders(): Promise<Provider[]> {
     return this.providerModel.find().exec();
   }
+  
+  async getUserType(userId: string): Promise<string | null> {
+    const user = await this.userModel.findById(userId).exec();
 
-  async getProviderById(id: string): Promise<Provider | null> {
-    return this.providerModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user.userType;
   }
 
-  async updateProvider(id: string, updateProviderDto: UpdateProviderDto): Promise<Provider> {
-    const existingProvider = await this.providerModel.findById(id).exec();
+
+  async getProviderByUserId(userId: string): Promise<Provider | null> {
+    // Check if the user with the provided userId is a provider
+    const userType = await this.getUserType(userId);
+
+    if (userType !== 'provider') {
+      throw new UnauthorizedException('User does not have the required userType for accessing provider information');
+    }
+
+    const provider = await this.providerModel.findOne({ user: userId }).exec();
+
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    return provider;
+  }
+
+
+  async updateProvider(updateProviderDto: UpdateProviderDto, userId: string): Promise<Provider> {
+    // Check if the user with the provided userId is a provider
+    const userType = await this.getUserType(userId);
+
+    if (userType !== 'provider') {
+      throw new UnauthorizedException('User does not have the required userType for updating provider information');
+    }
+
+    const existingProvider = await this.providerModel.findOne({ user: userId }).exec();
 
     if (!existingProvider) {
       throw new NotFoundException('Provider not found');
