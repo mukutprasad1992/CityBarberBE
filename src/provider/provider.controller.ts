@@ -122,12 +122,14 @@ export class ProviderController {
     }
   }
 
-  @Delete(':id')
+  @Delete()
   @UseGuards(JwtAuthGuard)
-  async deleteProvider(@Param('id') id: string) {
+  async deleteProvider(@Request() req: any) {
     try {
-      const deletedProvider = await this.providerService.deleteProvider(id);
-
+      const userId = req.user.userId; // Extract userId from the JWT token
+  
+      const deletedProvider = await this.providerService.deleteProvider(userId);
+  
       return {
         success: true,
         data: deletedProvider,

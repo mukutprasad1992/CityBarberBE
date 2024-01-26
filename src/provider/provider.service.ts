@@ -117,13 +117,18 @@ export class ProviderService {
     return existingProvider.save();
   }
 
-  async deleteProvider(id: string): Promise<Provider | null> {
-    const deletedProvider = await this.providerModel.findByIdAndDelete(id).exec();
-    
-    if (!deletedProvider) {
-      throw new NotFoundException('Provider not found');
-    }
+  async deleteProvider(userId: string): Promise<Provider | null> {
+    try {
+      const deletedProvider = await this.providerModel.findOneAndDelete({ user: userId }).exec();
 
-    return deletedProvider;
+      if (!deletedProvider) {
+        throw new NotFoundException('Provider not found');
+      }
+
+      return deletedProvider;
+    } catch (error) {
+      // Log the error or handle it accordingly
+      throw new Error(`Failed to delete provider: ${error.message}`);
+    }
   }
 }
