@@ -13,6 +13,7 @@ import { ConsumerModule } from './consumer/consumer.module';
 import { AuthorizationMiddleware } from './auth/controller/authorization.middleware';
 import { AuthModule } from './auth/auth.module';
 import { ProviderModule } from './provider/provider.module';
+import { ShopModule } from './shop/shop.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { ProviderModule } from './provider/provider.module';
     CountryModule,
     ConsumerModule,
     AuthModule,
-    ProviderModule
+    ProviderModule,
+    ShopModule,
   ],
   controllers: [AppController],
   providers: [AppService],

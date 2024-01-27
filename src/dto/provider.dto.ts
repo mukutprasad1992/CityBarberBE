@@ -39,8 +39,6 @@ export class CreateProviderDto {
   @IsString()
   country: string;
   profileImage: any;
-
- 
 }
 
 // update-provider.dto.ts

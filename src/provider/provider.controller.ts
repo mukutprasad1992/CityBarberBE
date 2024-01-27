@@ -1,9 +1,19 @@
 // provider.controller.ts
-import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  // Param,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ProviderService } from './provider.service';
 import { CreateProviderDto, UpdateProviderDto } from 'src/dto/provider.dto';
-import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard'; 
-import { Provider } from 'src/schemas/provider.schema';
+import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
+// import { Provider } from 'src/schemas/provider.schema';
 
 @Controller('providers')
 export class ProviderController {
@@ -11,13 +21,19 @@ export class ProviderController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async createProvider(@Body() createProviderDto: CreateProviderDto, @Request() req: any) {
+  async createProvider(
+    @Body() createProviderDto: CreateProviderDto,
+    @Request() req: any,
+  ) {
     try {
       // Check if the user has the userType "provider"
       if (req.user && req.user.userType === 'provider') {
-        const userId = req.user.userId;  // Extract userId from the JWT token
-        const createdProvider = await this.providerService.createProvider(createProviderDto, userId);
-        console.log("createdProvider:", createdProvider);
+        const userId = req.user.userId; // Extract userId from the JWT token
+        const createdProvider = await this.providerService.createProvider(
+          createProviderDto,
+          userId,
+        );
+        console.log('createdProvider:', createdProvider);
 
         return {
           success: true,
@@ -27,7 +43,8 @@ export class ProviderController {
       } else {
         return {
           success: false,
-          message: 'User does not have the required userType for provider creation',
+          message:
+            'User does not have the required userType for provider creation',
         };
       }
     } catch (error) {
@@ -53,7 +70,7 @@ export class ProviderController {
   @UseGuards(JwtAuthGuard)
   async getProviderById(@Request() req: any) {
     try {
-      const userId = req.user.userId;  // Extract userId from the JWT token
+      const userId = req.user.userId; // Extract userId from the JWT token
 
       const userType = await this.providerService.getUserType(userId);
 
@@ -76,7 +93,8 @@ export class ProviderController {
       } else {
         return {
           success: false,
-          message: 'User does not have the required userType for accessing provider information',
+          message:
+            'User does not have the required userType for accessing provider information',
         };
       }
     } catch (error) {
@@ -88,19 +106,23 @@ export class ProviderController {
     }
   }
 
-
-
   @Put()
   @UseGuards(JwtAuthGuard)
-  async updateProvider(@Body() updateProviderDto: UpdateProviderDto, @Request() req: any) {
+  async updateProvider(
+    @Body() updateProviderDto: UpdateProviderDto,
+    @Request() req: any,
+  ) {
     try {
-      const userId = req.user.userId;  // Extract userId from the JWT token
+      const userId = req.user.userId; // Extract userId from the JWT token
 
       const userType = await this.providerService.getUserType(userId);
 
       // Check if the user has the userType "provider"
       if (userType === 'provider') {
-        const updatedProvider = await this.providerService.updateProvider(updateProviderDto, userId);
+        const updatedProvider = await this.providerService.updateProvider(
+          updateProviderDto,
+          userId,
+        );
 
         return {
           success: true,
@@ -110,7 +132,8 @@ export class ProviderController {
       } else {
         return {
           success: false,
-          message: 'User does not have the required userType for updating provider information',
+          message:
+            'User does not have the required userType for updating provider information',
         };
       }
     } catch (error) {
@@ -127,9 +150,9 @@ export class ProviderController {
   async deleteProvider(@Request() req: any) {
     try {
       const userId = req.user.userId; // Extract userId from the JWT token
-  
+
       const deletedProvider = await this.providerService.deleteProvider(userId);
-  
+
       return {
         success: true,
         data: deletedProvider,

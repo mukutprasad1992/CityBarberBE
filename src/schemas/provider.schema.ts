@@ -1,13 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { Country, CountrySchema } from './country.schema';
-import { State, StateSchema } from './state.schema';
-import { City, CitySchema } from './city.schema';
+import { Country } from './country.schema';
+import { State } from './state.schema';
+import { City } from './city.schema';
 import { User } from './user.schema';
 
 @Schema()
 export class Provider extends Document {
-  static userType(userType: any): (target: typeof import("../provider/provider.service").ProviderService, propertyKey: undefined, parameterIndex: 4) => void {
+  static userType() // userType: any,
+  : (
+    target: typeof import('../provider/provider.service').ProviderService,
+    propertyKey: undefined,
+    parameterIndex: 4,
+  ) => void {
     throw new Error('Method not implemented.');
   }
 

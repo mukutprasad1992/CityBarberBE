@@ -30,6 +30,10 @@ export class CreateConsumerDto {
   @IsNotEmpty()
   @IsString()
   country: string;
+
+  @IsNotEmpty()
+  @IsString()
+  pin: string;
 }
 export class UpdateConsumerDto {
   @IsOptional()
