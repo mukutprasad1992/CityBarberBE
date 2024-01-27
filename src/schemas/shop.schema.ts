@@ -1,7 +1,8 @@
 // shop.model.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { Consumer } from './consumer.schema';
+import { Provider } from './provider.schema';
+import { User } from './user.schema';
 
 // Regular expression to validate 24-hour time format
 const timeRegex = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]$/;
@@ -67,10 +68,16 @@ export class Shop extends Document {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: Consumer.name,
+    ref: Provider.name,
     required: true,
   })
-  consumer: Consumer;
+  provider: Provider;
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: User.name,
+    required: true,
+  })
+  user: User;
 }
 
 export const ShopSchema = SchemaFactory.createForClass(Shop);

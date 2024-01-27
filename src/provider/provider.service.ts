@@ -1,6 +1,10 @@
 // provider.service.ts
 
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateProviderDto, UpdateProviderDto } from 'src/dto/provider.dto';
@@ -10,10 +14,8 @@ import { Provider } from 'src/schemas/provider.schema';
 import { State } from 'src/schemas/state.schema';
 import { User } from 'src/schemas/user.schema';
 
-
 @Injectable()
 export class ProviderService {
-  
   // cityModel: any;
   // stateModel: any;
   // countryModel: any;
@@ -25,15 +27,17 @@ export class ProviderService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
-
-  
-  
-  async createProvider(createProviderDto: CreateProviderDto, userId: string): Promise<Provider> {
+  async createProvider(
+    createProviderDto: CreateProviderDto,
+    userId: string,
+  ): Promise<Provider> {
     // Check if the user exists and has the userType 'provider'
     const user = await this.userModel.findById(userId).exec();
 
     if (!user || user.userType !== 'provider') {
-      throw new UnauthorizedException('User does not have the required userType for provider creation');
+      throw new UnauthorizedException(
+        'User does not have the required userType for provider creation',
+      );
     }
 
     // Validate and get the city, state, and country
@@ -62,12 +66,11 @@ export class ProviderService {
 
     return createdProvider.save();
   }
-  
-  
+
   async getAllProviders(): Promise<Provider[]> {
     return this.providerModel.find().exec();
   }
-  
+
   async getUserType(userId: string): Promise<string | null> {
     const user = await this.userModel.findById(userId).exec();
 
@@ -78,13 +81,14 @@ export class ProviderService {
     return user.userType;
   }
 
-
   async getProviderByUserId(userId: string): Promise<Provider | null> {
     // Check if the user with the provided userId is a provider
     const userType = await this.getUserType(userId);
 
     if (userType !== 'provider') {
-      throw new UnauthorizedException('User does not have the required userType for accessing provider information');
+      throw new UnauthorizedException(
+        'User does not have the required userType for accessing provider information',
+      );
     }
 
     const provider = await this.providerModel.findOne({ user: userId }).exec();
@@ -96,16 +100,22 @@ export class ProviderService {
     return provider;
   }
 
-
-  async updateProvider(updateProviderDto: UpdateProviderDto, userId: string): Promise<Provider> {
+  async updateProvider(
+    updateProviderDto: UpdateProviderDto,
+    userId: string,
+  ): Promise<Provider> {
     // Check if the user with the provided userId is a provider
     const userType = await this.getUserType(userId);
 
     if (userType !== 'provider') {
-      throw new UnauthorizedException('User does not have the required userType for updating provider information');
+      throw new UnauthorizedException(
+        'User does not have the required userType for updating provider information',
+      );
     }
 
-    const existingProvider = await this.providerModel.findOne({ user: userId }).exec();
+    const existingProvider = await this.providerModel
+      .findOne({ user: userId })
+      .exec();
 
     if (!existingProvider) {
       throw new NotFoundException('Provider not found');
@@ -119,7 +129,9 @@ export class ProviderService {
 
   async deleteProvider(userId: string): Promise<Provider | null> {
     try {
-      const deletedProvider = await this.providerModel.findOneAndDelete({ user: userId }).exec();
+      const deletedProvider = await this.providerModel
+        .findOneAndDelete({ user: userId })
+        .exec();
 
       if (!deletedProvider) {
         throw new NotFoundException('Provider not found');
