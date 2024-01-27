@@ -94,7 +94,7 @@ export class UserController {
       const user = await this.userService.findbyId(userId);
 
       // Now you can access the user details
-      console.log(user);
+      // console.log(user);
 
       return { success: true, user };
     } catch (error) {

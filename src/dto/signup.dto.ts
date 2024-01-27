@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
+  IsIn,
   Matches,
   MinLength,
 } from 'class-validator';
@@ -26,5 +27,6 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsString()
+  @IsIn(['consumer', 'provider'], { message: 'Invalid userType. Must be either "consumer" or "provider".' })
   readonly userType: string;
 }

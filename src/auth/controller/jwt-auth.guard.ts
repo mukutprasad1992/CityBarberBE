@@ -1,5 +1,3 @@
-// jwt-auth.guard.ts
-
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { AuthService } from '../service/auth.service';
@@ -15,26 +13,41 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request.headers.authorization);
 
     if (!token) {
+      console.error('Token not found in the authorization header.');
       return false;
     }
 
     return this.authService
       .verifyToken(token)
       .then((decodedToken) => {
-        // Set user information in the request object
         request.user = decodedToken as { userId: string; user: string };
-
+        console.log('Authenticated user:', request.user);
         return true;
       })
-      .catch(() => false);
+      .catch((error) => {
+        console.error('Token verification failed:', error.message);
+        console.error('Received Token for Verification:', token);
+        console.error('Request URL:', request.url); // Add the request URL to logs
+        // You can add more context or details to the logs as needed
+
+        return false;
+      });
   }
 
-  private extractTokenFromHeader(authorizationHeader: string): string | null {
+  extractTokenFromHeader(authorizationHeader: string): string | null {
     if (!authorizationHeader) {
       return null;
     }
 
-    const [, token] = authorizationHeader.split(' ');
-    return token || null;
+    const [bearer, token] = authorizationHeader.split(' ');
+
+    if (bearer !== 'Bearer' || !token) {
+      return null;
+    }
+
+    return token;
   }
+
+
+  
 }

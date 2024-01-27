@@ -32,8 +32,10 @@ async function bootstrap() {
       },
     }),
   );
+  
   app.use(new AuthorizationMiddleware().use); // Apply the middleware globally
 
   await app.listen(3000);
 }
+
 bootstrap();
