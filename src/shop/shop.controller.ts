@@ -8,10 +8,12 @@ import {
   HttpStatus,
   NotFoundException,
   Get,
+  Put,
+  Delete,
   //   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
-import { CreateShopDto } from 'src/dto/shop.dto';
+import { CreateShopDto, UpdateShopDto } from 'src/dto/shop.dto';
 import { ShopService } from './shop.service';
 
 @Controller('shop')
@@ -100,6 +102,52 @@ export class ShopController {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to retrieve shop',
+        error: error.message,
+      });
+    }
+  }
+  @Put('/update')
+  @UseGuards(JwtAuthGuard)
+  async updateShop(
+    @Body() updateShopDto: UpdateShopDto,
+    @Request() req: any,
+    @Res() res: any,
+  ) {
+    const userId = req.user.userId;
+
+    try {
+      const updatedShop = await this.shopService.updateShop(
+        userId,
+        updateShopDto,
+      );
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Shop updated successfully',
+        data: updatedShop,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to update shop',
+        error: error.message,
+      });
+    }
+  }
+  @Delete('/delete')
+  @UseGuards(JwtAuthGuard)
+  async deleteShop(@Res() res: any, @Request() req: any) {
+    const userId = req.user.userId;
+
+    try {
+      await this.shopService.deleteShop(userId);
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Shop deleted successfully',
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to delete shop',
         error: error.message,
       });
     }
