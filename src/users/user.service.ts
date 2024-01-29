@@ -92,7 +92,7 @@ export class UserService {
 
   // ...
 
-   generateToken(user: User): string {
+  generateToken(user: User): string {
     const token = jwt.sign(
       {
         userId: user._id,
