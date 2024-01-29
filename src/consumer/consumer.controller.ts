@@ -29,7 +29,6 @@ export class ConsumerController {
   ) {
     const userId = req.user.user || req.user.userId;
     const userType = req.user.userType;
-    // console.log('userId:', req.user.user);
 
     if (userType !== 'consumer') {
       throw new NotFoundException(

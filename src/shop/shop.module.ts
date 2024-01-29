@@ -17,10 +17,10 @@ import { User, UserSchema } from 'src/schemas/user.schema'; // Import User model
       { name: User.name, schema: UserSchema }, // Import User model schema
     ]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET, // Replace with your actual secret key
+      secret: process.env.JWT_SECRET,
     }),
   ],
   controllers: [ShopController],
-  providers: [ShopService, JwtAuthGuard, AuthService], // Add AuthService to providers
+  providers: [ShopService, JwtAuthGuard, AuthService],
 })
 export class ShopModule {}
