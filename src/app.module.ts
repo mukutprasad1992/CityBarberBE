@@ -14,6 +14,8 @@ import { AuthorizationMiddleware } from './auth/controller/authorization.middlew
 import { AuthModule } from './auth/auth.module';
 import { ProviderModule } from './provider/provider.module';
 import { ShopModule } from './shop/shop.module';
+// import { SlotModule } from './slot/slot.module';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ShopModule } from './shop/shop.module';
     AuthModule,
     ProviderModule,
     ShopModule,
+    ServicesModule,
+    // SlotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

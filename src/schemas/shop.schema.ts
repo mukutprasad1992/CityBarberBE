@@ -37,7 +37,7 @@ export class Shop extends Document {
       message: (props) => `${props.value} is not a valid 24-hour time format`,
     },
   })
-  openingTime: string;
+  openingTime: Date;
 
   @Prop({
     enum: [
