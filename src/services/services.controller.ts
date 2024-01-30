@@ -1,37 +1,51 @@
-// controllers/service.controller.ts
-
-import { Controller, Post, Body, UseGuards, Request, Res, HttpStatus, Get, Param, Put, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
-import { ServiceService } from 'src/services/services.service';
 import { CreateServiceDto, UpdateServiceDto } from 'src/dto/services.dto';
+import { ServicesService } from './services.service';
 
-@Controller('service')
-export class ServiceController {
-  constructor(private readonly serviceService: ServiceService) {}
+@Controller('services')
+export class ServicesController {
+  constructor(private readonly serviceService: ServicesService) {}
 
-  @Post('/create')
+  @Post('create')
   @UseGuards(JwtAuthGuard)
   async createService(
     @Body() createServiceDto: CreateServiceDto,
-    @Request() req: any,
+    @Req() req: any,
     @Res() res: any,
   ) {
     const userId = req.user.userId;
+    const userType = req.user.userType;
+
+    if (userType !== 'provider') {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        success: false,
+        message:
+          'User does not have the required userType for service creation',
+      });
+    }
 
     try {
       const createdService = await this.serviceService.createService(
         createServiceDto,
         userId,
       );
-
-      const responseData = {
-        ...createdService.toObject(),
-      };
-
       return res.status(HttpStatus.CREATED).json({
         success: true,
         message: 'Service created successfully',
-        data: responseData,
+        data: createdService,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -41,91 +55,103 @@ export class ServiceController {
       });
     }
   }
-
-  @Get()
-  async getAllServices(@Res() res: any) {
+  @Get('all')
+  async getAllServices(@Res() res) {
     try {
       const services = await this.serviceService.getAllServices();
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Services retrieved successfully',
-        data: services,
-      });
+      res.status(HttpStatus.OK).json({ success: true, services });
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Failed to retrieve services',
-        error: error.message,
-      });
+      if (error instanceof HttpException) {
+        res.status(error.getStatus()).json({
+          success: false,
+          message: error.message,
+        });
+      } else {
+        console.error('Unhandled error in getAllServices:', error);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: 'Internal server error',
+        });
+      }
     }
   }
+  @Get('id')
+  @UseGuards(JwtAuthGuard)
+  async getServiceById(@Body() requestBody: { id: string }, @Res() res) {
+    const { id } = requestBody;
 
-  @Get(':id')
-  async getServiceById(@Res() res: any, @Param('id') id: string) {
     try {
       const service = await this.serviceService.getServiceById(id);
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Service retrieved successfully',
-        data: service,
-      });
+      if (!service) {
+        return res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          message: 'Service not found',
+        });
+      }
+      res.status(HttpStatus.OK).json({ success: true, service });
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      console.error('Error in getServiceById:', error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: 'Failed to retrieve service',
-        error: error.message,
+        message: 'Internal server error',
       });
     }
   }
-
-  @Put(':id/update')
+  @Put('update')
   @UseGuards(JwtAuthGuard)
-  async updateService(
-    @Body() updateServiceDto: UpdateServiceDto,
-    @Request() req: any,
-    @Res() res: any,
-    @Param('id') id: string,
+  async updateServiceById(
+    @Body() requestBody: { id: string; updateServiceDto: UpdateServiceDto },
+    @Res() res,
   ) {
-    const userId = req.user.userId;
+    const { id, updateServiceDto } = requestBody;
 
     try {
-      const updatedService = await this.serviceService.updateService(
-        userId,
+      if (!id || !updateServiceDto) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Invalid request body',
+        });
+      }
+
+      const updatedService = await this.serviceService.updateServiceById(
         id,
         updateServiceDto,
       );
 
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Service updated successfully',
-        data: updatedService,
-      });
+      if (!updatedService) {
+        return res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          message: 'Service not found',
+        });
+      }
+
+      res.status(HttpStatus.OK).json({ success: true, updatedService });
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      console.error('Error updating service:', error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: 'Failed to update service',
-        error: error.message,
+        message: 'Internal server error',
       });
     }
   }
-
-  @Delete(':id/delete')
-  @UseGuards(JwtAuthGuard)
-  async deleteService(@Res() res: any, @Request() req: any, @Param('id') id: string) {
-    const userId = req.user.userId;
-
+  @Delete('delete')
+  async deleteServiceById(@Body() requestBody: { id: string }) {
     try {
-      await this.serviceService.deleteService(userId, id);
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Service deleted successfully',
-      });
+      const { id } = requestBody;
+      if (!id) {
+        throw new HttpException('Invalid request body', HttpStatus.BAD_REQUEST);
+      }
+      await this.serviceService.deleteServiceById(id);
+      return { success: true, message: 'Service deleted successfully' };
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Failed to delete service',
-        error: error.message,
-      });
+      if (error instanceof HttpException) {
+        throw new HttpException(error.message, error.getStatus());
+      } else {
+        throw new HttpException(
+          'Internal server error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 }

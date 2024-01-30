@@ -5,6 +5,7 @@ import {
   IsString,
   IsPhoneNumber,
   IsOptional,
+  IsMongoId,
 } from 'class-validator';
 
 export class CreateConsumerDto {
@@ -20,15 +21,15 @@ export class CreateConsumerDto {
   image?: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsMongoId()
   city: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsMongoId()
   state: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsMongoId()
   country: string;
 
   @IsNotEmpty()
@@ -49,14 +50,18 @@ export class UpdateConsumerDto {
   image?: string;
 
   @IsOptional()
-  @IsString()
-  city?: string;
+  @IsMongoId() // Validate if it's a MongoDB ObjectId
+  city?: string; // Change to accept ObjectId instead of string
+
+  @IsOptional()
+  @IsMongoId() // Validate if it's a MongoDB ObjectId
+  state?: string; // Change to accept ObjectId instead of string
+
+  @IsOptional()
+  @IsMongoId() // Validate if it's a MongoDB ObjectId
+  country?: string; // Change to accept ObjectId instead of string
 
   @IsOptional()
   @IsString()
-  state?: string;
-
-  @IsOptional()
-  @IsString()
-  country?: string;
+  pin: string;
 }

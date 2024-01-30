@@ -39,16 +39,10 @@ export class ConsumerService {
       );
     }
 
-    // Validate and get the city, state, and country
-    const city = await this.cityModel.findOne({
-      cityName: createConsumerDto.city,
-    });
-    const state = await this.stateModel.findOne({
-      stateName: createConsumerDto.state,
-    });
-    const country = await this.countryModel.findOne({
-      countryName: createConsumerDto.country,
-    });
+    // Validate and get the city, state, and country by ID
+    const city = await this.cityModel.findById(createConsumerDto.city);
+    const state = await this.stateModel.findById(createConsumerDto.state);
+    const country = await this.countryModel.findById(createConsumerDto.country);
 
     if (!city || !state || !country) {
       throw new HttpException(
@@ -122,9 +116,7 @@ export class ConsumerService {
 
     // Update city, state, country if present in the request body
     if (updateConsumerDto.city) {
-      const city = await this.cityModel.findOne({
-        cityName: updateConsumerDto.city,
-      });
+      const city = await this.cityModel.findById(updateConsumerDto.city);
       if (!city) {
         throw new Error('Invalid city');
       }
@@ -132,9 +124,7 @@ export class ConsumerService {
     }
 
     if (updateConsumerDto.state) {
-      const state = await this.stateModel.findOne({
-        stateName: updateConsumerDto.state,
-      });
+      const state = await this.stateModel.findById(updateConsumerDto.state);
       if (!state) {
         throw new Error('Invalid state');
       }
@@ -142,9 +132,9 @@ export class ConsumerService {
     }
 
     if (updateConsumerDto.country) {
-      const country = await this.countryModel.findOne({
-        countryName: updateConsumerDto.country,
-      });
+      const country = await this.countryModel.findById(
+        updateConsumerDto.country,
+      );
       if (!country) {
         throw new Error('Invalid country');
       }

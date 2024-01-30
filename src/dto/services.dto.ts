@@ -1,5 +1,6 @@
 // create-service.dto.ts
-import { IsString, IsNumber, IsNotEmpty, IsMongoId } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateServiceDto {
   @IsNotEmpty()
@@ -11,14 +12,10 @@ export class CreateServiceDto {
   servicePrice: number;
 
   @IsNotEmpty()
-  @IsMongoId()
-  shopId: string;
-
-  @IsNotEmpty()
-  @IsMongoId()
-  providerId: string;
-
-  @IsNotEmpty()
-  @IsMongoId()
-  userId: string;
+  @IsString()
+  shop: string; // Assuming you'll send the shop ID as a string in the request body
 }
+
+// update-service.dto.ts
+
+export class UpdateServiceDto extends PartialType(CreateServiceDto) {}
