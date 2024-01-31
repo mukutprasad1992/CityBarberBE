@@ -135,6 +135,7 @@ export class ServicesController {
     }
   }
   @Delete('delete')
+  @UseGuards(JwtAuthGuard)
   async deleteServiceById(@Body() requestBody: { id: string }) {
     try {
       const { id } = requestBody;

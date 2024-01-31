@@ -8,6 +8,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   Validate,
+  IsOptional,
 } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -39,7 +40,7 @@ export class CreateSlotDto {
   @IsString()
   day: string;
 
-  @IsNotEmpty() // Ensure the date is not empty
+  @IsOptional() // Ensure the date is not empty
   @IsString()
   @Matches(dateFormatRegex, {
     message: 'Date must be in YYYY-MM-DD format',

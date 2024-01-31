@@ -25,7 +25,7 @@ export class Slot extends Document {
   @Prop({ required: true })
   day: string;
 
-  @Prop({ required: true })
+  @Prop()
   date: string;
 
   @Prop({ type: [String], required: true })
