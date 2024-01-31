@@ -63,6 +63,22 @@ export class SlotService {
 
     // Extract shopId from shop object
     const shopId = shop._id;
+    const { openingTime, closingTime } = shop;
+
+    // Check if slots can be created within shop's opening and closing times
+    const openingHour = parseInt(openingTime.split(':')[0]);
+    const closingHour = parseInt(closingTime.split(':')[0]);
+
+    for (const timing of slotTiming) {
+      const [startHour] = timing.split('-')[0].split(':').map(Number);
+
+      // Check if slot timing is before the opening time or after the closing time
+      if (startHour < openingHour || startHour >= closingHour) {
+        throw new ConflictException(
+          'Slot timing is outside shop opening hours',
+        );
+      }
+    }
 
     // Create slots
     const createdSlots = await this.slotModel.create({

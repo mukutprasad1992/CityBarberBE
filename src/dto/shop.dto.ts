@@ -49,7 +49,7 @@ export class CreateShopDto {
 
   @IsNotEmpty()
   @Matches(timeRegex, { message: 'Opening time must be in 24-hour format' })
-  closingTime: Date;
+  closingTime: string;
 
   @IsString()
   shopImg: string;
