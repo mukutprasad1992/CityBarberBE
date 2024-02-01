@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProviderModule } from './provider/provider.module';
 import { ShopModule } from './shop/shop.module';
 import { ServicesModule } from './services/services.module';
+import { SlotModule } from './slot/slot.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ServicesModule } from './services/services.module';
     ProviderModule,
     ShopModule,
     ServicesModule,
+    SlotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

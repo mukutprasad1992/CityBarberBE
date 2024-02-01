@@ -27,6 +27,8 @@ export class SignUpDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['consumer', 'provider'], { message: 'Invalid userType. Must be either "consumer" or "provider".' })
+  @IsIn(['consumer', 'provider'], {
+    message: 'Invalid userType. Must be either "consumer" or "provider".',
+  })
   readonly userType: string;
 }

@@ -11,55 +11,53 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { SlotService } from './slot.service';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
-import { CreateServiceDto, UpdateServiceDto } from 'src/dto/services.dto';
-import { ServicesService } from './services.service';
+import { CreateSlotDto, UpdateSlotDto } from 'src/dto/slot.dto';
 
-@Controller('services')
-export class ServicesController {
-  constructor(private readonly serviceService: ServicesService) {}
-
+@Controller('slot')
+export class SlotController {
+  constructor(private readonly slotService: SlotService) {}
   @Post('create')
   @UseGuards(JwtAuthGuard)
-  async createService(
-    @Body() createServiceDto: CreateServiceDto,
+  async createSlot(
+    @Body() createSlotDto: CreateSlotDto,
     @Req() req: any,
     @Res() res: any,
   ) {
-    const userId = req.user.userId;
+    // console.log('Received slotDate:', createSlotDto.date);
     const userType = req.user.userType;
 
-    if (userType !== 'provider') {
-      return res.status(HttpStatus.UNAUTHORIZED).json({
-        success: false,
-        message:
-          'User does not have the required userType for service creation',
-      });
-    }
-
     try {
-      const createdService = await this.serviceService.createService(
-        createServiceDto,
-        userId,
-      );
+      // Ensure only providers can create slots
+      if (userType !== 'provider') {
+        return res.status(HttpStatus.UNAUTHORIZED).json({
+          success: false,
+          message:
+            'User does not have the required userType for creating slots',
+        });
+      }
+
+      const createdSlots = await this.slotService.createSlot(createSlotDto);
+
       return res.status(HttpStatus.CREATED).json({
         success: true,
-        message: 'Service created successfully',
-        data: createdService,
+        message: 'Slots created successfully',
+        data: createdSlots,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: 'Failed to create service',
+        message: 'Failed to create slots',
         error: error.message,
       });
     }
   }
   @Get('all')
-  async getAllServices(@Res() res) {
+  async getAllSlots(@Res() res: any) {
     try {
-      const services = await this.serviceService.getAllServices();
-      res.status(HttpStatus.OK).json({ success: true, services });
+      const slots = await this.slotService.getAllSlots();
+      res.status(HttpStatus.OK).json({ success: true, slots });
     } catch (error) {
       if (error instanceof HttpException) {
         res.status(error.getStatus()).json({
@@ -67,7 +65,7 @@ export class ServicesController {
           message: error.message,
         });
       } else {
-        console.error('Unhandled error in getAllServices:', error);
+        console.error('Unhandled error in getAllSlots:', error);
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
           success: false,
           message: 'Internal server error',
@@ -77,20 +75,20 @@ export class ServicesController {
   }
   @Get('id')
   @UseGuards(JwtAuthGuard)
-  async getServiceById(@Body() requestBody: { id: string }, @Res() res) {
+  async getSlotById(@Body() requestBody: { id: string }, @Res() res) {
     const { id } = requestBody;
 
     try {
-      const service = await this.serviceService.getServiceById(id);
-      if (!service) {
+      const slot = await this.slotService.getSlotById(id);
+      if (!slot) {
         return res.status(HttpStatus.NOT_FOUND).json({
           success: false,
-          message: 'Service not found',
+          message: 'Slot not found',
         });
       }
-      res.status(HttpStatus.OK).json({ success: true, service });
+      res.status(HttpStatus.OK).json({ success: true, slot });
     } catch (error) {
-      console.error('Error in getServiceById:', error);
+      console.error('Error in getSlotById:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Internal server error',
@@ -99,35 +97,35 @@ export class ServicesController {
   }
   @Put('update')
   @UseGuards(JwtAuthGuard)
-  async updateServiceById(
-    @Body() requestBody: { id: string; updateServiceDto: UpdateServiceDto },
-    @Res() res,
+  async updateSlotById(
+    @Body() requestBody: { id: string; updateSlotDto: UpdateSlotDto },
+    @Res() res: any,
   ) {
-    const { id, updateServiceDto } = requestBody;
+    const { id, updateSlotDto } = requestBody;
 
     try {
-      if (!id || !updateServiceDto) {
+      if (!id || !updateSlotDto) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: 'Invalid request body',
         });
       }
 
-      const updatedService = await this.serviceService.updateServiceById(
+      const updatedSlot = await this.slotService.updateSlotById(
         id,
-        updateServiceDto,
+        updateSlotDto,
       );
 
-      if (!updatedService) {
+      if (!updatedSlot) {
         return res.status(HttpStatus.NOT_FOUND).json({
           success: false,
-          message: 'Service not found',
+          message: 'Slot not found',
         });
       }
 
-      res.status(HttpStatus.OK).json({ success: true, updatedService });
+      res.status(HttpStatus.OK).json({ success: true, updatedSlot });
     } catch (error) {
-      console.error('Error updating service:', error);
+      console.error('Error updating slot:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Internal server error',
@@ -136,14 +134,16 @@ export class ServicesController {
   }
   @Delete('delete')
   @UseGuards(JwtAuthGuard)
-  async deleteServiceById(@Body() requestBody: { id: string }) {
+  async deleteSlot(@Body() requestBody: { id: string }, @Res() res: any) {
     try {
       const { id } = requestBody;
       if (!id) {
         throw new HttpException('Invalid request body', HttpStatus.BAD_REQUEST);
       }
-      await this.serviceService.deleteServiceById(id);
-      return { success: true, message: 'Service deleted successfully' };
+      await this.slotService.deleteSlotById(id);
+      res
+        .status(HttpStatus.OK)
+        .json({ success: true, message: 'Slot deleted successfully' });
     } catch (error) {
       if (error instanceof HttpException) {
         throw new HttpException(error.message, error.getStatus());
