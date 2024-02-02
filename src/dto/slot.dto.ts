@@ -9,8 +9,9 @@ import {
   ValidatorConstraintInterface,
   Validate,
   IsOptional,
+  ValidationArguments,
 } from 'class-validator';
-import { PartialType } from '@nestjs/mapped-types';
+// import { PartialType } from '@nestjs/mapped-types';
 
 // Regular expression to validate 24-hour time format
 const timeRangeRegex =
@@ -28,6 +29,20 @@ export class IsAfterOrCurrentDateConstraint
 
   defaultMessage() {
     return 'Slot date must be the current date or later';
+  }
+}
+@ValidatorConstraint({ name: 'IsAfterOrCurrentDateForUpdate', async: false })
+export class IsAfterOrCurrentDateForUpdateConstraint
+  implements ValidatorConstraintInterface
+{
+  validate(value: any) {
+    const currentDate = new Date();
+    const selectedDate = new Date(value);
+    return selectedDate >= currentDate;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return `The ${args.property} must be the current date or later`;
   }
 }
 
@@ -61,4 +76,33 @@ export class CreateSlotDto {
   slotTiming: string[]; // Now expects an array of strings for slot timings
 }
 
-export class UpdateSlotDto extends PartialType(CreateSlotDto) {}
+export class UpdateSlotDto {
+  @IsOptional()
+  @IsString()
+  serviceId?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  day: string;
+
+  @IsOptional() // Ensure the date is not empty
+  @IsString()
+  @Matches(dateFormatRegex, {
+    message: 'Date must be in YYYY-MM-DD format',
+  })
+  @Validate(IsAfterOrCurrentDateForUpdateConstraint, {
+    message: 'Slot date must be the current date or later',
+  })
+  date?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  @Matches(timeRangeRegex, {
+    each: true,
+    message: 'Slot timing is not in correct format',
+  })
+  slotTiming?: string[]; // Now expects an array of strings for slot timings
+}

@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -10,6 +11,7 @@ import {
   Req,
   Res,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { SlotService } from './slot.service';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
@@ -98,7 +100,8 @@ export class SlotController {
   @Put('update')
   @UseGuards(JwtAuthGuard)
   async updateSlotById(
-    @Body() requestBody: { id: string; updateSlotDto: UpdateSlotDto },
+    @Body(new ValidationPipe())
+    requestBody: { id: string; updateSlotDto: UpdateSlotDto },
     @Res() res: any,
   ) {
     const { id, updateSlotDto } = requestBody;
@@ -123,10 +126,21 @@ export class SlotController {
         });
       }
 
-      res.status(HttpStatus.OK).json({ success: true, updatedSlot });
+      // If update is successful, return the updated slot
+      return res.status(HttpStatus.OK).json({ success: true, updatedSlot });
     } catch (error) {
       console.error('Error updating slot:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+
+      // Check if the error is a ConflictException and customize the response accordingly
+      if (error instanceof ConflictException) {
+        return res.status(HttpStatus.CONFLICT).json({
+          success: false,
+          message: error.message, // Include the error message in the response
+        });
+      }
+
+      // For other errors, return a generic internal server error message
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Internal server error',
       });

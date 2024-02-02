@@ -28,7 +28,6 @@ export class SlotService {
       day,
       date,
     });
-
     // Check if there's any overlap with existing slots
     for (const existingSlot of existingSlots) {
       for (const existingTiming of existingSlot.slotTiming) {
@@ -65,14 +64,44 @@ export class SlotService {
 
     // Extract shopId from shop object
     const shopId = shop._id;
-    const { openingTime, closingTime } = shop;
+    const { openingDay, closingDay, openingTime, closingTime } = shop;
 
     // Check if slots can be created within shop's opening and closing times
     const openingHour = parseInt(openingTime.split(':')[0]);
     const closingHour = parseInt(closingTime.split(':')[0]);
 
+    const daysOfWeek = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    const openingDayIndex = daysOfWeek.indexOf(openingDay);
+    const closingDayIndex = daysOfWeek.indexOf(closingDay);
+    const dayIndex = daysOfWeek.indexOf(day);
+
+    // Check if the shop is closed on the selected day
+    if (dayIndex < openingDayIndex || dayIndex > closingDayIndex) {
+      throw new ConflictException('Shop is closed on selected day');
+    }
+
+    // Array to store the created slots
+    const createdSlots = [];
+
+    // Create slots
     for (const timing of slotTiming) {
-      const [startHour] = timing.split('-')[0].split(':').map(Number);
+      const [startTime, endTime] = timing.split('-');
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
+
+      const slotStart = new Date(date);
+      slotStart.setHours(startHour, startMinute);
+
+      const slotEnd = new Date(date);
+      slotEnd.setHours(endHour, endMinute);
 
       // Check if slot timing is before the opening time or after the closing time
       if (startHour < openingHour || startHour >= closingHour) {
@@ -80,21 +109,37 @@ export class SlotService {
           'Slot timing is outside shop opening hours',
         );
       }
+
+      // Create slot
+      const createdSlot = await this.slotModel.create({
+        service: serviceId,
+        shop: shopId,
+        provider,
+        user,
+        day,
+        date,
+        slotTiming: [timing], // Store timing as an array with a single value
+      });
+
+      // Push the created slot to the array
+      createdSlots.push(createdSlot);
     }
 
-    // Create slots
-    const createdSlots = await this.slotModel.create({
-      service: serviceId,
-      shop: shopId,
-      provider,
-      user,
-      day,
-      date,
-      slotTiming,
-    });
+    // Format the response to return each slot separately
+    const formattedSlots = createdSlots.map((slot) => ({
+      service: slot.service,
+      shop: slot.shop,
+      provider: slot.provider,
+      user: slot.user,
+      day: slot.day,
+      slotTiming: slot.slotTiming[0], // Take the first timing as a string
+      _id: slot._id,
+      __v: slot.__v,
+    }));
 
-    return [createdSlots];
+    return formattedSlots;
   }
+
   async getAllSlots(): Promise<{ success: true; slots: Slot[] }> {
     try {
       const slots = await this.slotModel.find().exec();
@@ -107,6 +152,7 @@ export class SlotService {
       );
     }
   }
+  //Get slot by ID
   async getSlotById(id: string): Promise<Slot | null> {
     try {
       const slot = await this.slotModel.findById(id).exec();
@@ -119,6 +165,7 @@ export class SlotService {
       );
     }
   }
+  //Update Slots
   async updateSlotById(
     id: string,
     updateSlotDto: UpdateSlotDto,
@@ -182,7 +229,24 @@ export class SlotService {
         }
 
         const { shop } = service;
-        const { openingTime, closingTime } = shop;
+        const { openingDay, closingDay, openingTime, closingTime } = shop;
+        const daysOfWeek = [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ];
+        const openingDayIndex = daysOfWeek.indexOf(openingDay);
+        const closingDayIndex = daysOfWeek.indexOf(closingDay);
+        const dayIndex = daysOfWeek.indexOf(day);
+
+        // Check if the shop is closed on the selected day
+        if (dayIndex < openingDayIndex || dayIndex > closingDayIndex) {
+          throw new ConflictException('Shop is closed on selected day');
+        }
 
         // Check if slots can be created within shop's opening and closing times
         const openingHour = parseInt(openingTime.split(':')[0]);
@@ -221,6 +285,7 @@ export class SlotService {
       }
     }
   }
+
   async deleteSlotById(id: string): Promise<void> {
     const deletedSlot = await this.slotModel.findByIdAndDelete(id).exec();
     if (!deletedSlot) {
