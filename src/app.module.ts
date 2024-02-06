@@ -16,6 +16,7 @@ import { ProviderModule } from './provider/provider.module';
 import { ShopModule } from './shop/shop.module';
 // import { ServicesModule } from './services/services.module';
 // import { SlotModule } from './slot/slot.module';
+import { SeatsModule } from './seats/seats.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ShopModule } from './shop/shop.module';
     AuthModule,
     ProviderModule,
     ShopModule,
+    SeatsModule,
     // ServicesModule,
     // SlotModule,
   ],
