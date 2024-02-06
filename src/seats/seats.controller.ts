@@ -1,29 +1,31 @@
+// seat.controller.ts
 import {
   Body,
   Controller,
-  Delete,
-  Get,
-  HttpException,
-  HttpStatus,
   Post,
-  Put,
-  Req,
-  Res,
+  Request,
   UseGuards,
+  HttpStatus,
+  Res,
+  Get,
+  Put,
+  Delete,
+  HttpException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
-import { CreateServiceDto, UpdateServiceDto } from 'src/dto/services.dto';
-import { ServicesService } from './services.service';
+import { SeatsService } from './seats.service';
+import { JwtAuthGuard } from '../auth/controller/jwt-auth.guard';
+import { CreateSeatDto } from 'src/dto/seat.dto';
+import { UpdateSeatDto } from 'src/dto/seat.dto';
 
-@Controller('services')
-export class ServicesController {
-  constructor(private readonly serviceService: ServicesService) {}
+@Controller('seats')
+export class SeatsController {
+  constructor(private readonly seatService: SeatsService) {}
 
-  @Post('create')
+  @Post('/create')
   @UseGuards(JwtAuthGuard)
-  async createService(
-    @Body() createServiceDto: CreateServiceDto,
-    @Req() req: any,
+  async createSeat(
+    @Body() createSeatDto: CreateSeatDto,
+    @Request() req: any,
     @Res() res: any,
   ) {
     const userId = req.user.userId;
@@ -32,34 +34,41 @@ export class ServicesController {
     if (userType !== 'provider') {
       return res.status(HttpStatus.UNAUTHORIZED).json({
         success: false,
-        message:
-          'User does not have the required userType for service creation',
+        message: 'User does not have the required userType for seat creation',
+      });
+    }
+
+    // Check if shopId is provided
+    if (!createSeatDto.shopId) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message: 'Shop ID is required for seat creation',
       });
     }
 
     try {
-      const createdService = await this.serviceService.createService(
-        createServiceDto,
+      const createdSeats = await this.seatService.createSeat(
+        createSeatDto,
         userId,
       );
       return res.status(HttpStatus.CREATED).json({
         success: true,
-        message: 'Service created successfully',
-        data: createdService,
+        message: 'Seats created successfully',
+        data: createdSeats,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: 'Failed to create service',
+        message: 'Failed to create seats',
         error: error.message,
       });
     }
   }
   @Get('all')
-  async getAllServices(@Res() res) {
+  async getAllSeats(@Res() res) {
     try {
-      const services = await this.serviceService.getAllServices();
-      res.status(HttpStatus.OK).json({ success: true, services });
+      const seats = await this.seatService.getAllSeats();
+      res.status(HttpStatus.OK).json({ success: true, seats });
     } catch (error) {
       if (error instanceof HttpException) {
         res.status(error.getStatus()).json({
@@ -67,7 +76,7 @@ export class ServicesController {
           message: error.message,
         });
       } else {
-        console.error('Unhandled error in getAllServices:', error);
+        console.error('Unhandled error in getAllSeats:', error);
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
           success: false,
           message: 'Internal server error',
@@ -77,20 +86,20 @@ export class ServicesController {
   }
   @Get('id')
   @UseGuards(JwtAuthGuard)
-  async getServiceById(@Body() requestBody: { id: string }, @Res() res) {
+  async getSeatById(@Body() requestBody: { id: string }, @Res() res) {
     const { id } = requestBody;
 
     try {
-      const service = await this.serviceService.getServiceById(id);
-      if (!service) {
+      const seat = await this.seatService.getSeatById(id);
+      if (!seat) {
         return res.status(HttpStatus.NOT_FOUND).json({
           success: false,
-          message: 'Service not found',
+          message: 'seat not found',
         });
       }
-      res.status(HttpStatus.OK).json({ success: true, service });
+      res.status(HttpStatus.OK).json({ success: true, seat });
     } catch (error) {
-      console.error('Error in getServiceById:', error);
+      console.error('Error in getseatById:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Internal server error',
@@ -100,34 +109,34 @@ export class ServicesController {
   @Put('update')
   @UseGuards(JwtAuthGuard)
   async updateServiceById(
-    @Body() requestBody: { id: string; updateServiceDto: UpdateServiceDto },
+    @Body() requestBody: { id: string; updateseatDto: UpdateSeatDto },
     @Res() res,
   ) {
-    const { id, updateServiceDto } = requestBody;
+    const { id, updateseatDto } = requestBody;
 
     try {
-      if (!id || !updateServiceDto) {
+      if (!id || !updateseatDto) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: 'Invalid request body',
         });
       }
 
-      const updatedService = await this.serviceService.updateServiceById(
+      const updatedseat = await this.seatService.updateseatById(
         id,
-        updateServiceDto,
+        updateseatDto,
       );
 
-      if (!updatedService) {
+      if (!updatedseat) {
         return res.status(HttpStatus.NOT_FOUND).json({
           success: false,
-          message: 'Service not found',
+          message: 'seat not found',
         });
       }
 
-      res.status(HttpStatus.OK).json({ success: true, updatedService });
+      res.status(HttpStatus.OK).json({ success: true, updatedseat });
     } catch (error) {
-      console.error('Error updating service:', error);
+      console.error('Error updating seat:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Internal server error',
@@ -135,13 +144,14 @@ export class ServicesController {
     }
   }
   @Delete('delete')
-  async deleteServiceById(@Body() requestBody: { id: string }) {
+  @UseGuards(JwtAuthGuard)
+  async deleteSeatById(@Body() requestBody: { id: string }) {
     try {
       const { id } = requestBody;
       if (!id) {
         throw new HttpException('Invalid request body', HttpStatus.BAD_REQUEST);
       }
-      await this.serviceService.deleteServiceById(id);
+      await this.seatService.deleteSeatById(id);
       return { success: true, message: 'Service deleted successfully' };
     } catch (error) {
       if (error instanceof HttpException) {

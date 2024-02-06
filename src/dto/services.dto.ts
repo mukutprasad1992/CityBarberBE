@@ -1,5 +1,5 @@
 // create-service.dto.ts
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateServiceDto {
@@ -11,7 +11,7 @@ export class CreateServiceDto {
   @IsNumber()
   servicePrice: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   shop: string; // Assuming you'll send the shop ID as a string in the request body
 }

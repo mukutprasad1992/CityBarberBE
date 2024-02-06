@@ -61,7 +61,7 @@ export class Shop extends Document {
       message: (props) => `${props.value} is not a valid 24-hour time format`,
     },
   })
-  closingTime: Date;
+  closingTime: string;
 
   @Prop()
   shopImg: string;
