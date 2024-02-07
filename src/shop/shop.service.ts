@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Shop } from 'src/schemas/shop.schema';
@@ -16,6 +20,10 @@ export class ShopService {
 
   async createShop(createShopDto: CreateShopDto, userId: string) {
     // Find the provider based on the userId
+    const existingShop = await this.shopModel.findOne({ user: userId }).exec();
+    if (existingShop) {
+      throw new ConflictException('User already has a shop');
+    }
     const provider = await this.providerModel.findOne({ user: userId }).exec();
 
     if (!provider) {
