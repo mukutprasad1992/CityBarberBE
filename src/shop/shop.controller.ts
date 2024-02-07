@@ -59,6 +59,14 @@ export class ShopController {
           success: false,
           message: error.message,
         });
+      } else if (
+        error.response &&
+        error.response.statusCode === HttpStatus.CONFLICT
+      ) {
+        return res.status(HttpStatus.CONFLICT).json({
+          success: false,
+          message: 'User already has a shop',
+        });
       } else {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
           success: false,
