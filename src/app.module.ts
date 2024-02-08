@@ -18,6 +18,8 @@ import { ShopModule } from './shop/shop.module';
 // import { SlotModule } from './slot/slot.module';
 import { SeatsModule } from './seats/seats.module';
 
+import { TimingModule } from './timing/timing.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +36,7 @@ import { SeatsModule } from './seats/seats.module';
     ProviderModule,
     ShopModule,
     SeatsModule,
+    TimingModule,
     // ServicesModule,
     // SlotModule,
   ],
