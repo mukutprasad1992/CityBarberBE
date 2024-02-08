@@ -18,6 +18,14 @@ import { User } from '../schemas/user.schema';
 import { SignUpDto } from '../dto/signup.dto';
 import { UpdateUserDto } from 'src/dto/updateUser.dto';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  USER_DELETED_SUCCESS,
+  USER_GET_All_SUCCESS,
+  USER_GET_ID_SUCCESS,
+  USER_UPDATE_SUCCESS,
+} from 'src/utils/responseUtils';
 
 @Controller('user')
 export class UserController {
@@ -32,35 +40,31 @@ export class UserController {
       const response = await this.userService.register(signUpDto);
 
       if (response.success) {
-        res.status(HttpStatus.CREATED).json({
-          success: true,
-          message: response.message,
-          user: response.user,
-          token: response.token,
-        });
+        res
+          .status(response.statusCode)
+          .json(
+            createSuccessResponse(
+              response.user,
+              response.message,
+              response.token,
+            ),
+          );
       } else {
-        res.status(response.statusCode).json({
-          success: false,
-          message: response.message,
-          user: null,
-          token: null,
-        });
+        res
+          .status(response.statusCode)
+          .json(createErrorResponse(response.message, null, response.user));
       }
     } catch (error) {
       if (error instanceof HttpException) {
-        res.status(error.getStatus()).json({
-          success: false,
-          message: error.message,
-          user: null,
-          token: null,
-        });
+        res
+          .status(error.getStatus())
+          .json(createErrorResponse(error.message, null, null));
       } else {
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          success: false,
-          message: 'Internal Server Error',
-          user: null,
-          token: null,
-        });
+        res
+          .status(500)
+          .json(
+            createErrorResponse('Internal Server Error', error.message, null),
+          );
       }
     }
   }
@@ -74,13 +78,15 @@ export class UserController {
   async getAllUsers(@Res() res): Promise<void> {
     try {
       const result = await this.userService.findAll();
-      res.status(HttpStatus.OK).json({ success: true, user: result.user });
+      res
+        .status(200)
+        .json(createSuccessResponse(result.user, USER_GET_All_SUCCESS));
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Internal Server Error',
-        user: null,
-      });
+      res
+        .status(500)
+        .json(
+          createErrorResponse('Internal Server Error', error.message, null),
+        );
     }
   }
   //Get user by id use (/user/:id)
@@ -96,13 +102,13 @@ export class UserController {
       // Now you can access the user details
       // console.log(user);
 
-      return { success: true, user };
+      return createSuccessResponse(user, USER_GET_ID_SUCCESS);
     } catch (error) {
       // Handle the error, for example, log it
       console.error('Error retrieving user profile:', error);
 
       // Return an appropriate response
-      return { success: false, user: undefined };
+      return createErrorResponse('Internal Server Error', error.message, null);
     }
   }
   @Patch('/update')
@@ -124,16 +130,10 @@ export class UserController {
       // Handle specific error cases if needed
       if (error instanceof NotFoundException) {
         // Handle NotFoundException, for example:
-        res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'User not found',
-        });
+        res.status(404).json(createErrorResponse('User not found', null, null));
       } else {
         console.error('Error updating user:', error);
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          success: false,
-          message: 'Failed to update user',
-        });
+        res.status(500).json(createErrorResponse('Failed to update user', null, null));
       }
     }
   }
@@ -144,25 +144,16 @@ export class UserController {
 
     try {
       await this.userService.deleteById(userId);
-      res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'User has been deleted',
-      });
+      res.status(200).json(createSuccessResponse(null, USER_DELETED_SUCCESS));
     } catch (error) {
       // Handle specific error cases if needed
       if (error instanceof NotFoundException) {
         // Handle NotFoundException, for example:
-        res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'User not found',
-        });
+        res.status(404).json(createErrorResponse('User not found', null, null));
       }
       // Handle other errors
       console.error('Error deleting user:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Failed to delete user',
-      });
+      res.status(500).json(createErrorResponse('Failed to delete user', null, null));
     }
   }
 }

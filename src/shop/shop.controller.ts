@@ -10,11 +10,25 @@ import {
   Get,
   Put,
   Delete,
+  UseInterceptors,
+  UploadedFile,
   //   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
 import { CreateShopDto, UpdateShopDto } from 'src/dto/shop.dto';
 import { ShopService } from './shop.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {  Multer } from 'multer';
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  SHOP_CREATE_SUCCESS,
+  SHOP_UPDATE_SUCCESS,
+  SHOP_GET_ID_SUCCESS,
+  SHOP_GET_All_SUCCESS,
+  SHOP_DELETED_SUCCESS
+} from 'src/utils/responseUtils';
+
 
 @Controller('shop')
 export class ShopController {
@@ -22,10 +36,12 @@ export class ShopController {
 
   @Post('/create')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('image')) // 'image' is the field name for the file in the request
   async createShop(
     @Body() createShopDto: CreateShopDto,
     @Request() req: any,
     @Res() res: any,
+    @UploadedFile() file: Multer.File, // Update the type to Multer.File
   ) {
     const userId = req.user.userId;
 
@@ -39,6 +55,13 @@ export class ShopController {
     }
 
     try {
+
+       // Check if a file is uploaded
+       if (file) {
+        // Process the uploaded file, e.g., save its information in the database
+        console.log('Uploaded file:', file);
+      }
+
       const createdShop = await this.shopService.createShop(
         createShopDto,
         userId,
@@ -48,11 +71,9 @@ export class ShopController {
         ...createdShop.toObject(),
       };
 
-      return res.status(HttpStatus.CREATED).json({
-        success: true,
-        message: 'Shop created successfully',
-        data: responseData,
-      });
+      return res.status(HttpStatus.CREATED).json(
+        createSuccessResponse(createdShop,SHOP_CREATE_SUCCESS),
+      );
     } catch (error) {
       if (error instanceof NotFoundException) {
         return res.status(HttpStatus.NOT_FOUND).json({
@@ -80,11 +101,9 @@ export class ShopController {
   async getAllShops(@Res() res: any) {
     try {
       const shops = await this.shopService.getAllShops();
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Shops retrieved successfully',
-        data: shops,
-      });
+      return res.status(HttpStatus.OK).json(
+        createSuccessResponse(shops,SHOP_GET_All_SUCCESS),
+      );
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -101,11 +120,9 @@ export class ShopController {
 
     try {
       const shop = await this.shopService.getShopByUserId(userId);
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Shop retrieved successfully',
-        data: shop,
-      });
+      return res.status(HttpStatus.OK).json(
+        createSuccessResponse(shop,SHOP_GET_ID_SUCCESS),
+      );
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -128,11 +145,9 @@ export class ShopController {
         userId,
         updateShopDto,
       );
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Shop updated successfully',
-        data: updatedShop,
-      });
+      return res.status(HttpStatus.OK).json(
+        createSuccessResponse(updatedShop,SHOP_UPDATE_SUCCESS),
+      );
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -148,10 +163,9 @@ export class ShopController {
 
     try {
       await this.shopService.deleteShop(userId);
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Shop deleted successfully',
-      });
+      return res.status(HttpStatus.OK).json(
+        createSuccessResponse(SHOP_DELETED_SUCCESS),
+      );
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,

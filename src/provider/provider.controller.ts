@@ -14,6 +14,15 @@ import { ProviderService } from './provider.service';
 import { CreateProviderDto, UpdateProviderDto } from 'src/dto/provider.dto';
 import { JwtAuthGuard } from 'src/auth/controller/jwt-auth.guard';
 // import { Provider } from 'src/schemas/provider.schema';
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  PROVIDER_CREATE_SUCCESS,
+  PROVIDER_UPDATE_SUCCESS,
+  PROVIDER_GET_ID_SUCCESS,
+  PROVIDER_GET_All_SUCCESS,
+  PROVIDER_DELETED_SUCCESS
+} from 'src/utils/responseUtils';
 
 @Controller('providers')
 export class ProviderController {
@@ -35,17 +44,12 @@ export class ProviderController {
         );
         console.log('createdProvider:', createdProvider);
 
-        return {
-          success: true,
-          data: createdProvider,
-          message: 'Provider created successfully',
-        };
+        return createSuccessResponse(createdProvider, PROVIDER_CREATE_SUCCESS);
+
       } else {
-        return {
-          success: false,
-          message:
-            'User does not have the required userType for provider creation',
-        };
+        return createErrorResponse(
+          'User does not have the required userType for provider creation',
+        );
       }
     } catch (error) {
       return {
@@ -153,17 +157,10 @@ export class ProviderController {
 
       const deletedProvider = await this.providerService.deleteProvider(userId);
 
-      return {
-        success: true,
-        data: deletedProvider,
-        message: 'Provider deleted successfully',
-      };
+      return createSuccessResponse(deletedProvider, PROVIDER_DELETED_SUCCESS);
     } catch (error) {
-      return {
-        success: false,
-        message: 'Failed to delete provider',
-        error: error.message,
-      };
+      return createErrorResponse('Failed to delete provider', error.message);
+
     }
   }
 }
