@@ -1,3 +1,6 @@
+import { HttpStatus } from "@nestjs/common";
+
+
 export const createSuccessResponse = (data: any, message = 'Success', token?: string) => ({
   success: true,
   message,
@@ -45,3 +48,102 @@ export const USER_UPDATE_SUCCESS = 'User updated successfully';
 export const USER_GET_ID_SUCCESS = 'User fetched successfully';
 export const USER_GET_All_SUCCESS = 'All Users fetched successfully';
 export const USER_DELETED_SUCCESS = 'User Deleted successfully';
+
+
+
+//Error Status
+export const ErrorMessage = {
+
+  userAlreadyExists: { message: 'User already exists', statusCode: HttpStatus.BAD_REQUEST },
+
+  passwordMismatch: { message: 'Password and Confirm Password do not match', statusCode: HttpStatus.BAD_REQUEST },
+
+  notFoundUploadedPhoto: { message: 'Please upload a photo', statusCode: HttpStatus.BAD_REQUEST },
+
+  internalServer: { message: 'Internal server error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+
+  userNotFound: { message: 'User not found', statusCode: HttpStatus.NOT_FOUND },
+
+  invalidCredentials: { message: 'Invalid email or password', statusCode: HttpStatus.BAD_REQUEST },
+
+  unauthorizedError: { message: 'Invalid credentials', statusCode: HttpStatus.BAD_REQUEST },
+
+  genericError: { message: 'An unexpected error occurred', statusCode: HttpStatus.BAD_REQUEST },
+
+  passwordResetFailed: { message: 'Unable to reset password at this time' },
+
+  cityNotFound: { message: 'City not found', statusCode: HttpStatus.NOT_FOUND },
+
+  consumerNotFound: { message: 'Consumer not found', statusCode: HttpStatus.NOT_FOUND },
+
+  consumerAlreadyExists: { message: 'Consumer already exists with the given details' },
+
+  userType: { message: 'User does not have the required userType of consumer', statusCode: HttpStatus.BAD_REQUEST },
+
+};
+
+//Success Status
+
+export const SuccessMessage = {
+
+  userCreated: { message: 'User created successfully', statusCode: HttpStatus.CREATED },
+
+  forgotpasswordMessage: { message: "Link sent successfully", statusCode: HttpStatus.OK },
+
+  getAllUser: { message: 'Fetched all users successfully', statusCode: HttpStatus.OK },
+
+  getUserById: { message: 'Fetch user with given id successfully', statusCode: HttpStatus.OK },
+
+  updateUser: { message: 'User updated successfully', statusCode: HttpStatus.OK },
+
+  deleteUser: { message: 'User deleted successfully', statusCode: HttpStatus.OK },
+
+  userLoggedinSuccessfully: { message: 'Login successfully', statusCode: HttpStatus.OK },
+
+  forgotPasswordMail: { message: "Mail sent successfully", statusCode: HttpStatus.OK },
+
+  passwordResetSuccess: { message: 'Password reset successfully', statusCode: HttpStatus.OK },
+
+  cityAddedSuccessfully: { message: 'City added successfully', statusCode: HttpStatus.CREATED },
+
+  getAllCity: { message: 'All cities fetched successfully', statusCode: HttpStatus.OK },
+
+  getCityById: { message: 'Fetch city with given id successfully', statusCode: HttpStatus.OK },
+
+  updateCity: { message: 'City updated successfully', statusCode: HttpStatus.OK },
+
+  deleteCity: { message: 'City deleted successfully', statusCode: HttpStatus.OK },
+
+  stateAddedSuccessfully: { message: 'State added successfully', statusCode: HttpStatus.CREATED },
+
+  getAllState: { message: 'All states fetched successfully', statusCode: HttpStatus.OK },
+
+  getStateById: { message: 'Fetched state with given id successfully', statusCode: HttpStatus.OK },
+
+  updateState: { message: 'State updated successfully', statusCode: HttpStatus.OK },
+
+  deleteState: { message: 'State deleted successfully', statusCode: HttpStatus.OK },
+
+  countryAddedSuccessfully: { message: 'Country added successfully', statusCode: HttpStatus.CREATED },
+
+  getAllCountries: { message: 'All countries fetched successfully', statusCode: HttpStatus.OK },
+
+  getCountryById: { message: 'Fetched conutry with given id successfully', statusCode: HttpStatus.OK },
+
+  updateCountry: { message: 'Country updated successfully', statusCode: HttpStatus.OK },
+
+  deleteCountry: { message: 'Country deleted successfully', statusCode: HttpStatus.OK },
+
+  consumerCreatedSuccessfully: { message: 'Consumer added successfully', statusCode: HttpStatus.CREATED },
+
+  getAllConsumers: { message: 'All consumers fetched successfully', statusCode: HttpStatus.OK },
+
+  getConsumersById: { message: 'Fetched consumer with given id successfully', statusCode: HttpStatus.OK },
+
+  updateConsumer: { message: 'Consumer updated successfully', statusCode: HttpStatus.OK },
+
+  deleteConsumer: { message: 'Consumer deleted successfully', statusCode: HttpStatus.OK },
+
+  consumerProfile: { message: 'Profile fetched successfully', statusCode: HttpStatus.OK },
+
+};

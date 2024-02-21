@@ -8,20 +8,26 @@ import { CreateCountryDto, UpdateCountryDto } from 'src/dto/country.dto';
 export class CountryService {
   constructor(
     @InjectModel(Country.name) private countryModel: Model<Country>,
-  ) {}
+  ) { }
 
-  async create(createCountryDto: CreateCountryDto): Promise<Country> {
+  // Method to create a new country
+  async createCountry(createCountryDto: CreateCountryDto): Promise<Country> {
     const createdCountry = new this.countryModel(createCountryDto);
     return createdCountry.save();
   }
-  async findAll(): Promise<Country[]> {
+
+  // Method to fetch all countries
+  async findAllCountry(): Promise<Country[]> {
     return this.countryModel.find().exec();
   }
-  async findById(id: string): Promise<Country> {
+
+  // Method to find a country by its ID
+  async findCountryById(id: string): Promise<Country> {
     return this.countryModel.findById(id).exec();
   }
 
-  async update(
+  // Method to update a country by its ID
+  async updateCountry(
     id: string,
     updateCountryDto: UpdateCountryDto,
   ): Promise<Country> {
@@ -30,7 +36,8 @@ export class CountryService {
       .exec();
   }
 
-  async deleteById(id: string): Promise<{ message: string }> {
+  // Method to delete a country by its ID
+  async deleteCountry(id: string): Promise<{ message: string }> {
     const existingCountry = await this.countryModel.findByIdAndDelete(id);
 
     if (!existingCountry) {
