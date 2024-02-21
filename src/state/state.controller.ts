@@ -40,7 +40,7 @@ export class StateController {
     return { message: SuccessMessage.updateState, state: updateState }
   }
 
-  @Delete(':id')
+  @Delete('/delete/:id')
   async deleteUser(@Param('id') id: string): Promise<{ message: string }> {
     return this.stateService.deleteById(id);
   }

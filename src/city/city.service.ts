@@ -36,7 +36,9 @@ export class CityService {
 
   // Method to delete a city by ID
   async deleteCity(id: string): Promise<{ message: string }> {
+
     // Find and delete the city by its ID
+    
     const existingCity = await this.cityModel.findByIdAndDelete(id);
 
     // If the city does not exist, throw NotFoundException
