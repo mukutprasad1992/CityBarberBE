@@ -16,6 +16,6 @@ import { JwtAuthGuard } from './controller/jwt-auth.guard';
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthorizationMiddleware).forRoutes('*'); // Apply middleware to all routes
+    consumer.apply(AuthorizationMiddleware).forRoutes('*');
   }
 }
