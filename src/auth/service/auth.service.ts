@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../../schemas/user.schema';
@@ -12,6 +12,7 @@ import { ErrorMessage } from 'src/utils/responseUtils';
 export class AuthService {
 
   private transporter: nodemailer.Transporter;
+  private readonly JWT_SECRET = process.env.JWT_SECRET;
 
   constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
 
@@ -87,31 +88,65 @@ export class AuthService {
   }
 
   // Send password reset email to the user
-  async sendPasswordResetEmail(user: User): Promise<void> {
+
+  async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    // Retrieve user by email
+    const user = await this.userModel.findOne({ email }).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Generate and send password reset email
+    const resetLink = `http://your-app/reset-password?token=${token}`;
+
+    const transporter = nodemailer.createTransport({
+      // Configure your SMTP transporter here
+      service: 'gmail',
+      auth: {
+        user: 'himanshubaghel2101@gmail.com',
+        pass: 'gorg qanr kjlb czpx',
+      },
+    });
+
+    const mailOptions = {
+      from: 'himanshubaghel2101@gmail.com ',
+      to: email,
+      subject: 'Password Reset',
+      text: `Please click the following link to reset your password: ${resetLink}`,
+    };
+
     try {
-      // Generate password reset token
-      const resetToken = jwt.sign({ userId: user._id }, process.env.FORGET_PASSWORD_KEY, { expiresIn: '1h' });
-
-      const resetLink = `http://your-app/reset-password?token=${resetToken}`;
-
-      // Prepare email options
-      const mailOptions: nodemailer.SendMailOptions = {
-        from: process.env.MAIL_SENDER,
-        to: user.email,
-        subject: 'Password Reset',
-        text: `Click the following link to reset your password: ${resetLink}`,
-      };
-
-      // Send the email
-      await this.transporter.sendMail(mailOptions);
-
-      console.log(`Password reset email sent to ${user.email}`);
+      await transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error('Error sending password reset email:', error);
-      // Handle the error (e.g., log it, throw it, etc.)
-      throw error;
+      throw new HttpException('Failed to send password reset email', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  // async sendPasswordResetEmail(user: User): Promise<void> {
+  //   try {
+  //     // Generate password reset token
+  //     const resetToken = jwt.sign({ userId: user._id }, process.env.ForgetPasswordKey, { expiresIn: '1h' });
+
+  //     const resetLink = `http://your-app/reset-password?token=${resetToken}`;
+
+  //     // Prepare email options
+  //     const mailOptions: nodemailer.SendMailOptions = {
+  //       from: process.env.mailSender,
+  //       to: user.email,
+  //       subject: 'Password Reset',
+  //       text: `Click the following link to reset your password: ${resetLink}`,
+  //     };
+
+  //     // Send the email
+  //     await this.transporter.sendMail(mailOptions);
+
+  //     console.log(`Password reset email sent to ${user.email}`);
+  //   } catch (error) {
+  //     console.error('Error sending password reset email:', error);
+  //     // Handle the error (e.g., log it, throw it, etc.)
+  //     throw error;
+  //   }
+  // }
 
 
   // Generate JWT token for the user
@@ -138,23 +173,11 @@ export class AuthService {
 
   // Verify JWT token
   async verifyToken(token: string): Promise<{ userId: string }> {
-
-    // Verify the token and return decoded user ID
-    return new Promise((resolve, reject) => {
-
-      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-      
-        if (err) {
-          
-          // Throw UnauthorizedException if token is invalid
-          reject(new UnauthorizedException(`Invalid token: ${err.message}`));
-      
-        } else {
-      
-          resolve(decodedToken as { userId: string });
-      
-        }
-      });
-    });
+    try {
+      const decodedToken = jwt.verify(token, this.JWT_SECRET) as { userId: string };
+      return decodedToken;
+    } catch (error) {
+      throw new UnauthorizedException(`Invalid token: ${error.message}`);
+    }
   }
 }

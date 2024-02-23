@@ -12,6 +12,7 @@ import { User, UserType } from '../../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ErrorMessage, SuccessMessage } from 'src/utils/responseUtils';
+import * as jwt from 'jsonwebtoken';
 
 @Controller('auth')
 export class AuthController {
@@ -70,26 +71,47 @@ export class AuthController {
       return { success: false, error: 'Authentication failed' };
     }
   }
-
-  // User forgot password API
   @Post('/forgot-password')
+  async forgotPassword(@Body() body: { email: string }) {
+    try {
+      const user = await this.authService.findByEmail(body.email);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
 
-  async forgotUserPassword(@Body() requestParams: { email: string }): Promise<{ message: any }> {
+      // Generate password reset token
+      const resetToken = jwt.sign({ userId: user._id }, process.env.ForgetPasswordKey, { expiresIn: '1h' });
 
-    const user = await this.authService.findByEmail(requestParams.email);
+      // Send password reset email with token
+      await this.authService.sendPasswordResetEmail(user.email, resetToken);
 
-    if (!user) {
-
-      throw new HttpException(ErrorMessage.userNotFound, HttpStatus.NOT_FOUND);
-
+      return { message: 'Password reset email sent successfully' };
+    } catch (error) {
+      throw new HttpException('Failed to send password reset email', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    await this.authService.sendPasswordResetEmail(user);
-
-    return { message: SuccessMessage.forgotPasswordMail };
   }
 
-  // User password reset API
+
+
+  // // User forgot password API
+  // @Post('/forgot-password')
+
+  // async forgotUserPassword(@Body() requestParams: { email: string }): Promise<{ message: any }> {
+
+  //   const user = await this.authService.findByEmail(requestParams.email);
+
+  //   if (!user) {
+
+  //     throw new HttpException(ErrorMessage.userNotFound, HttpStatus.NOT_FOUND);
+
+  //   }
+
+  //   await this.authService.sendPasswordResetEmail(user);
+
+  //   return { message: SuccessMessage.forgotPasswordMail };
+  // }
+
+  // // User password reset API
   @Post('/reset-password')
 
   @UseGuards(JwtAuthGuard)

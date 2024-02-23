@@ -29,7 +29,7 @@ import {
 
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
   //used to register a new user
   @Post('/register')
   async signUp(
@@ -74,7 +74,7 @@ export class UserController {
   */
 
   //Get all users use (/user/all)
-  @Get('/all')
+  @Get('getall')
   async getAllUsers(@Res() res): Promise<void> {
     try {
       const result = await this.userService.findAll();

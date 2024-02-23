@@ -80,6 +80,12 @@ export const ErrorMessage = {
 
   userType: { message: 'User does not have the required userType of consumer', statusCode: HttpStatus.BAD_REQUEST },
 
+  providerAlreadyExists: { message: 'Provider already exists with the given details' },
+
+  providerNotFound: { message: 'Provider not found', statusCode: HttpStatus.NOT_FOUND },
+
+  providerUserType: {message: 'User type is not matched'}
+
 };
 
 //Success Status
@@ -146,4 +152,13 @@ export const SuccessMessage = {
 
   consumerProfile: { message: 'Profile fetched successfully', statusCode: HttpStatus.OK },
 
+  providerCreatedSuccessfully: { message: 'Consumer added successfully', statusCode: HttpStatus.CREATED },
+
+  getAllProviders: { message: 'All Providers fetched successfully', statusCode: HttpStatus.OK },
+
+  getProvidersById: { message: 'Fetched provider with given id successfully', statusCode: HttpStatus.OK },
+
+  updateProvider: { message: 'Provider updated successfully', statusCode: HttpStatus.OK },
+
+  deleteProvider: { message: 'Provider deleted successfully', statusCode: HttpStatus.OK },
 };
