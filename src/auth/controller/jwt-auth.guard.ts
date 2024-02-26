@@ -12,6 +12,8 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     // Extract the authorization header from the request
     const authorizationHeader = request.headers.authorization;
+    console.log("authorizationHeader:", authorizationHeader)
+    console.log("Split length:", authorizationHeader.split(' ').length);
 
     // Check if the authorization header is missing
     if (!authorizationHeader) {
@@ -21,10 +23,12 @@ export class JwtAuthGuard implements CanActivate {
     // Extract the token from the authorization header
     const token = this.extractTokenFromHeader(authorizationHeader);
 
+    console.log(" before token:", token)
     // Check if the token is missing
     if (!token) {
       throw new UnauthorizedException('Token is missing');
     }
+    console.log(" after token:", token)
 
     try {
       // Verify the token using the AuthService
@@ -45,12 +49,31 @@ export class JwtAuthGuard implements CanActivate {
 
   // Helper method to extract token from authorization header
   private extractTokenFromHeader(authorizationHeader: string): string | null {
-    const [bearer, token] = authorizationHeader.split(' ');
+    // Check if the authorization header contains any spaces
+    if (!authorizationHeader.includes(' ')) {
+      // If no spaces are found, assume the entire header is the token
+      return authorizationHeader;
+    }
+
+    // Split the authorization header into parts
+    const parts = authorizationHeader.split(' ');
+
+    console.log("Split length:", parts.length);
+
     // Check if the authorization header is in correct format
-    if (bearer !== 'Bearer' || !token) {
+    if (parts.length !== 2) {
       return null;
     }
-    // Return the extracted token
-    return token;
+
+    // If the header is in the format "Bearer <token>"
+    const [bearer, token] = parts;
+    if (bearer === 'Bearer' && token) {
+      return token;
+    }
+
+    // If the header doesn't start with "Bearer ", assume the token is directly provided
+    return authorizationHeader;
   }
+
+
 }

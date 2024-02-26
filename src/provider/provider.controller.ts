@@ -25,7 +25,7 @@ export class ProviderController {
         return { message: SuccessMessage.providerCreatedSuccessfully, provider: createdProvider };
 
       } else {
-        throw new HttpException(ErrorMessage.providerUserType, HttpStatus.BAD_REQUEST)
+        throw new HttpException(ErrorMessage.NotProviderUserType, HttpStatus.BAD_REQUEST)
       }
     } catch (error) {
       throw new HttpException(ErrorMessage.genericError, HttpStatus.BAD_REQUEST)
@@ -33,12 +33,17 @@ export class ProviderController {
   }
 
   @Get('/getall')
-
   async getAllProviders(): Promise<{ message: any, provider: any }> {
+    try {
 
-    const getAllProviders = await this.providerService.getAllProviders();
+      const getAllProviders = await this.providerService.getAllProviders();
 
-    return { message: SuccessMessage.getAllProviders, provider: getAllProviders };
+      return { message: SuccessMessage.getAllProviders, provider: getAllProviders };
+
+    } catch (error) {
+      throw new HttpException(ErrorMessage.genericError, HttpStatus.BAD_REQUEST)
+    }
+
   }
 
   @Get('/get/:id')
@@ -67,7 +72,7 @@ export class ProviderController {
 
       } else {
 
-        return { message: ErrorMessage.providerUserType, provider: HttpStatus.BAD_REQUEST || null };
+        return { message: ErrorMessage.NotProviderUserType, provider: HttpStatus.BAD_REQUEST || null };
 
       }
 
@@ -96,7 +101,7 @@ export class ProviderController {
         return { message: SuccessMessage.updateProvider, provider: updatedProvider };
 
       } else {
-        return { message: ErrorMessage.providerUserType, provider: HttpStatus.BAD_REQUEST || null };
+        return { message: ErrorMessage.NotProviderUserType, provider: HttpStatus.BAD_REQUEST || null };
       }
     } catch (error) {
       throw new HttpException(error.message || ErrorMessage.genericError, HttpStatus.INTERNAL_SERVER_ERROR)

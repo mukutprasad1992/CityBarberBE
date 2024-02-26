@@ -84,7 +84,14 @@ export const ErrorMessage = {
 
   providerNotFound: { message: 'Provider not found', statusCode: HttpStatus.NOT_FOUND },
 
-  providerUserType: {message: 'User type is not matched'}
+  NotProviderUserType: { message: 'User type is not matched', statusCode: HttpStatus.BAD_REQUEST } || { message: "User does not have the required userType for provider creation", statusCode: HttpStatus.BAD_REQUEST },
+
+  countryNotFound: { message: 'Country not found', statusCode: HttpStatus.NOT_FOUND },
+
+  stateNotFound: { message: 'State not found', statusCode: HttpStatus.NOT_FOUND },
+
+  unableToDecodeTheToken: { message: 'Token decoding is missing', statusCode: HttpStatus.UNAUTHORIZED }
+
 
 };
 
