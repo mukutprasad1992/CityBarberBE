@@ -32,34 +32,49 @@ export class AuthService {
 
   // Register a new user
   async userRegister(user: User): Promise<User> {
+    try {
+      // Hash the password before storing it in the database
+      const hashedPassword = await bcrypt.hash(user.password, 10);
 
-    // Hash the password before storing it in the database
-    const hashedPassword = await bcrypt.hash(user.password, 10);
+      const createdUser = await this.userModel.create({ ...user, password: hashedPassword });
 
-    const createdUser = await this.userModel.create({ ...user, password: hashedPassword });
+      return createdUser.save();
+    } catch (error) {
+      throw new HttpException(error.message || ErrorMessage.genericError, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
 
-    return createdUser.save();
   }
 
   // Find a user by ID
   async findById(userId: string): Promise<User> {
+    try {
+      const user = await this.userModel.findById(userId).exec();
 
-    const user = await this.userModel.findById(userId).exec();
+      if (!user) {
 
-    if (!user) {
+        // Throw NotFoundException if user is not found
+        throw new NotFoundException(ErrorMessage.userNotFound);
 
-      // Throw NotFoundException if user is not found
-      throw new NotFoundException(ErrorMessage.userNotFound);
+      }
 
+      return user;
+    } catch (error) {
+      throw new HttpException(error.message || ErrorMessage.genericError, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
-    return user;
   }
 
   // Find a user by email
   async findByEmail(email: string): Promise<User> {
 
-    return this.userModel.findOne({ email }).exec();
+    try {
+      const findByEmail = await this.userModel.findOne({ email }).exec();
+
+      return findByEmail
+
+    } catch (error) {
+      throw new HttpException(error.message || ErrorMessage.genericError, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
 
   }
 
@@ -122,62 +137,82 @@ export class AuthService {
     }
   }
 
-  // async sendPasswordResetEmail(user: User): Promise<void> {
-  //   try {
-  //     // Generate password reset token
-  //     const resetToken = jwt.sign({ userId: user._id }, process.env.ForgetPasswordKey, { expiresIn: '1h' });
+  async userResetPassword(userId: string, newPassword: string, requestingUserId: string): Promise<void> {
+    // Fetch user from the database
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
-  //     const resetLink = `http://your-app/reset-password?token=${resetToken}`;
+    // Check if the user requesting the password reset is authorized
+    if (user.id !== requestingUserId) {
+      throw new Error('Unauthorized');
+    }
 
-  //     // Prepare email options
-  //     const mailOptions: nodemailer.SendMailOptions = {
-  //       from: process.env.mailSender,
-  //       to: user.email,
-  //       subject: 'Password Reset',
-  //       text: `Click the following link to reset your password: ${resetLink}`,
-  //     };
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  //     // Send the email
-  //     await this.transporter.sendMail(mailOptions);
-
-  //     console.log(`Password reset email sent to ${user.email}`);
-  //   } catch (error) {
-  //     console.error('Error sending password reset email:', error);
-  //     // Handle the error (e.g., log it, throw it, etc.)
-  //     throw error;
-  //   }
-  // }
-
-
-  // Generate JWT token for the user
-  generateToken(user: User): string {
-
-    const tokenContent = {
-
-      userId: user._id instanceof ObjectId ? user._id.toHexString() : user._id,
-
-      name: user.name,
-
-      email: user.email,
-
-      userType: user.userType,
-
-    };
-
-    // Generate JWT token with user information and expiration time
-    const token = jwt.sign(tokenContent, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    return token;
-
+    // Update user's password
+    user.password = hashedPassword;
+    await user.save();
   }
+
+// async sendPasswordResetEmail(user: User): Promise<void> {
+//   try {
+//     // Generate password reset token
+//     const resetToken = jwt.sign({ userId: user._id }, process.env.ForgetPasswordKey, { expiresIn: '1h' });
+
+//     const resetLink = `http://your-app/reset-password?token=${resetToken}`;
+
+//     // Prepare email options
+//     const mailOptions: nodemailer.SendMailOptions = {
+//       from: process.env.mailSender,
+//       to: user.email,
+//       subject: 'Password Reset',
+//       text: `Click the following link to reset your password: ${resetLink}`,
+//     };
+
+//     // Send the email
+//     await this.transporter.sendMail(mailOptions);
+
+//     console.log(`Password reset email sent to ${user.email}`);
+//   } catch (error) {
+//     console.error('Error sending password reset email:', error);
+//     // Handle the error (e.g., log it, throw it, etc.)
+//     throw error;
+//   }
+// }
+
+
+// Generate JWT token for the user
+generateToken(user: User): string {
+
+  const tokenContent = {
+
+    userId: user._id instanceof ObjectId ? user._id.toHexString() : user._id,
+
+    name: user.name,
+
+    email: user.email,
+
+    userType: user.userType,
+
+  };
+
+  // Generate JWT token with user information and expiration time
+  const token = jwt.sign(tokenContent, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+  return token;
+
+}
 
   // Verify JWT token
-  async verifyToken(token: string): Promise<{ userId: string }> {
-    try {
-      const decodedToken = jwt.verify(token, this.JWT_SECRET) as { userId: string };
-      return decodedToken;
-    } catch (error) {
-      throw new UnauthorizedException(`Invalid token: ${error.message}`);
-    }
+  async verifyToken(token: string): Promise < { userId: string } > {
+  try {
+    const decodedToken = jwt.verify(token, this.JWT_SECRET) as { userId: string };
+    return decodedToken;
+  } catch(error) {
+    throw new UnauthorizedException(`Invalid token: ${error.message}`);
   }
+}
 }

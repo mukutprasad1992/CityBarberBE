@@ -69,9 +69,7 @@ export class UserController {
     }
   }
 
-  /* 
-  CRUD Operations Controllers 
-  */
+ 
 
   //Get all users use (/user/all)
   @Get('getall')
@@ -155,5 +153,10 @@ export class UserController {
       console.error('Error deleting user:', error);
       res.status(500).json(createErrorResponse('Failed to delete user', null, null));
     }
+  }
+
+  @Get('getById/:id')
+  async getUserById(){
+    
   }
 }

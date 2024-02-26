@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Req,
   UseGuards,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { User, UserType } from '../../schemas/user.schema';
@@ -71,7 +72,7 @@ export class AuthController {
       return { success: false, error: 'Authentication failed' };
     }
   }
-  @Post('/forgot-password')
+  @Post('/forgotPassword')
   async forgotPassword(@Body() body: { email: string }) {
     try {
       const user = await this.authService.findByEmail(body.email);
@@ -91,6 +92,21 @@ export class AuthController {
     }
   }
 
+  @Post('/resetPassword')
+  @UseGuards(JwtAuthGuard)
+  async resetPassword(
+    @Param('userId') userId: string,
+    @Body('newPassword') newPassword: string,
+    @Req() req,
+  ): Promise<{ message: string }> {
+    try {
+      const requestingUserId = req.user.userId;
+      await this.authService.userResetPassword(userId, newPassword, requestingUserId);
+      return { message: 'Password reset successful' };
+    } catch (error) {
+      throw new Error('Failed to reset password');
+    }
+  }
 
 
   // // User forgot password API
@@ -112,43 +128,46 @@ export class AuthController {
   // }
 
   // // User password reset API
-  @Post('/reset-password')
+  // @Post('/reset-password')
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
 
-  async resetPassword(@Req() request: any, @Body() requestBody: { newPassword: string }): Promise<{ message: string, newToken?: string }> {
+  // async resetPassword(@Req() request: any, @Body() requestBody: { newPassword: string }): Promise<{ message: string, newToken?: string }> {
 
-    try {
-      if (!request.user || !request.user.userId) {
+  //   try {
+  //     console.log('Before Request headers:', request.headers);
 
-        console.log('Decoded token is missing');
+  //     if (!request.user || !request.user.userId) {
+  //       console.log('After Request headers:', request.headers);
 
-        throw new HttpException('Decoded token is missing', HttpStatus.UNAUTHORIZED);
-      }
+  //       console.log('Decoded token is missing');
 
-      const userId = request.user.userId;
-      const user = await this.authService.findById(userId);
+  //       throw new HttpException(ErrorMessage.unableToDecodeTheToken, HttpStatus.UNAUTHORIZED);
+  //     }
 
-      if (!user) {
-        console.log('User:', user);
-        throw new HttpException(ErrorMessage.userNotFound, HttpStatus.NOT_FOUND);
-      }
+  //     const userId = request.user.userId;
+  //     const user = await this.authService.findById(userId);
 
-      const hashedPassword = await bcrypt.hash(requestBody.newPassword, 10);
-      user.password = hashedPassword;
-      await user.save();
+  //     if (!user) {
+  //       console.log('User:', user);
+  //       throw new HttpException(ErrorMessage.userNotFound, HttpStatus.NOT_FOUND);
+  //     }
 
-      const newToken = this.authService.generateToken(user);
+  //     const hashedPassword = await bcrypt.hash(requestBody.newPassword, 10);
+  //     user.password = hashedPassword;
+  //     await user.save();
 
-      console.log(newToken);
-      console.log('Password reset successful');
+  //     const newToken = this.authService.generateToken(user);
 
-      return { message: 'Password reset successful', newToken };
+  //     console.log(newToken);
+  //     console.log('Password reset successful');
 
-    } catch (error) {
-      console.error('Error in resetPassword:', error);
+  //     return { message: 'Password reset successful', newToken };
 
-      throw new HttpException(error.message || ErrorMessage.genericError, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
+  //   } catch (error) {
+  //     console.error('Error in resetPassword:', error);
+
+  //     throw new HttpException(error.message || ErrorMessage.genericError, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
 }
